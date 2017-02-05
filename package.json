@@ -1,0 +1,23 @@
+{
+  "name": "dt-shape",
+  "version": "0.0.1",
+  "description": "Build data by using shapes",
+  "main": "dt-shape.js",
+  "scripts": {
+    "test": "mocha test"
+  },
+  "keywords": [
+    "dt",
+    "structure",
+    "data"
+  ],
+  "author": "Peter Naydenov",
+  "license": "MIT",
+  "dependencies": {
+    "dt-toolbox": "^1.1.3"
+  },
+  "devDependencies": {
+    "chai"  : "^3.5.0",
+    "mocha" : "^3.2.0"
+  }
+}
