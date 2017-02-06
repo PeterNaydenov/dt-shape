@@ -1,5 +1,7 @@
 # DT Shape
 
+**WARNING: Experimental stage**
+
 Build data structures by using data maps. The data map can look like that:
 
 ```js
@@ -17,10 +19,10 @@ let dataShape  = {
      // Use dt-toolbox library:
      let dt = dtbox.init(data).value
      
-     // Build data according dataShape
+     // Build data according dataShape. Result will be in DT format.
      let resultDT = shape ( dt , dataShape )
 
-     // Result will be in DT format. If want it back to standard object:
+     // If want it back as a standard object:
      let result = shape ( dt, dataShape ).build()
 
 ```
@@ -112,7 +114,7 @@ _(Nothing yet)_
 
 ## Release History
 
-### 1.0.0 (2017-02-05)
+### 0.0.1 (2017-02-05)
  
  - [x] Initial code;
  - [x] Test package;
