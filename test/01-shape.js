@@ -32,7 +32,13 @@ it ( 'Shallow structure', () => {
   dtbox
       .init ( test )
       .spreadAll ( 'dt', dt =>  result = shape(dt, newStructure).build()   )
-
+/*
+    Expected result:
+    {
+        firstName : 'Peter'
+      , lastName  : 'Naydenov'
+    } 
+*/
       expect ( result ).to.have.property ( 'firstName' )
       expect ( result ).to.have.property ( 'lastName'  )
       
@@ -63,7 +69,14 @@ it ( 'Deep structure' , () => {
     dtbox
       .init ( test )
       .spreadAll ( 'dt', dt => result = shape(dt, structure).build() )
-
+/*
+    Expected result:
+    {
+       firstName : 'Peter'
+      , lastName : 'Naydenov'
+      , personal-data : { age : 42 }
+    }  
+*/
       expect ( result ).to.have.property ( 'firstName' )
       expect ( result ).to.have.property ( 'personal-data' )
       expect ( result['personal-data'] ).to.have.property ( 'age' )
@@ -101,7 +114,15 @@ it ( 'Apply structure on different data sources', () => {
    dtbox
        .init ( st2 )
        .spreadAll ( 'dt', dt => result2 = shape(dt, structure).build()   )
-
+/*
+    Expected result for both should be:
+    {
+        firstName : 'Peter'
+      , lastName  : 'Naydenov'
+    }
+  
+  It's because key 'profile/age' does not exist
+*/
     expect ( result1 ).to.have.property ( 'firstName' ) 
     expect ( result1 ).to.have.property ( 'lastName'  ) 
     expect ( result1 ).to.not.have.property ( 'personal-data' ) 
@@ -132,7 +153,16 @@ it ( 'Operation: Fold' , () => {
                       , 'fold!hidden'    : [ 'age' ]
                    }
 
-
+/*
+    Expected result:
+    {
+       name : {
+                  firstName : 'Peter'
+                , lastName  : 'Naydenov'
+              }
+       hidden : { age : 42 }
+    }
+*/
    dtbox
       .init( st1 )
       .spreadAll ( 'dt', dt => {
@@ -177,12 +207,21 @@ it ( 'Operation: List' , () => {
       .spreadAll ( 'dt', dt => {
                                    result = shape(dt, structure).build()
                     })
+/*
+    Expected result:
+    {
+        firstName : 'Peter'
+      , lastName  : 'Naydenov'
+      , hidden    : [ 'Peter', 'Naydenov', 42 ]
+    }
+*/   
    
    expect ( result ).to.have.property ( 'firstName' )
    expect ( result ).to.have.property ( 'lastName'  )
 
    expect ( result['hidden'] ).to.be.an ( 'array' )
    expect ( result['hidden'] ).to.contain ( 'Peter' )
+   expect ( result['hidden'] ).to.contain ( 'Naydenov' )
    expect ( result['hidden'] ).to.contain ( 42 )
 
 }) // it list
