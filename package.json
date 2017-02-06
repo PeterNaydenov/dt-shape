@@ -11,6 +11,10 @@
     "structure",
     "data"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PeterNaydenov/dt-shape.git"
+  },
   "author": "Peter Naydenov",
   "license": "MIT",
   "dependencies": {
