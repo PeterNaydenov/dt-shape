@@ -138,6 +138,7 @@ it ( 'Apply structure on different data sources', () => {
 
 
 it ( 'Operation: Fold' , () => {
+  // * Fold will collect sources in an object 
     let result;
     let st1 = { 
                 profile : {
@@ -225,6 +226,7 @@ it ( 'Operation: List' , () => {
    expect ( result['hidden'] ).to.contain ( 42 )
 
 }) // it list
+
 
 
 }) // describe

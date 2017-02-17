@@ -2,16 +2,17 @@
 
 **WARNING: Experimental stage**
 
-Build data structures by using data maps. The data map can look like that:
+Build data structures by using data shape. The data shape can look like that:
 
 ```js
 
 let dataShape  = {
                    'name' : [ 'firstName' , 'name' ]
 /*                   ^            ^
-                     |            |---> search for values in these keys
+                     |            |
+                     |            +---> search for values in these keys
                      |
-        Create key with this name
+         Create key with this name
                      
 */
                  }
@@ -22,7 +23,7 @@ let dataShape  = {
      // Build data according dataShape. Result will be in DT format.
      let resultDT = shape ( dt , dataShape )
 
-     // If want it back as a standard object:
+     // If want it back as a standard javascript object:
      let result = shape ( dt, dataShape ).build()
 
 ```
@@ -54,19 +55,69 @@ let shape = require ( 'dt-shape')
 
 
 
-## API
-Shape function returns a DT object. Methods available are described in [exportAPI of dt-toolbox](https://github.com/PeterNaydenov/dt-toolbox).
+## How it works?
+Shape is simple function that receives two arguments - (`source data`, `data shape`) and returns as a result DT object.
+Methods available for DT object are described in [exportAPI of dt-toolbox](https://github.com/PeterNaydenov/dt-toolbox).
 
+### Source Data
+Source data should be DT object. Any standard javascript structure can be converted to DT by using dt-toolbox library.
 
+```js
 
+let dt = dtbox.init( jsArray ).value
 
-# How it works?
+```
 
-1. First: Create dataShape
+### Data Shape
+`Data shape` represents connection between `source data` and result object. Keys will become a result property names. Values are `source data` keys where shape function will search for data. Values of shape object are always **array**. Simple example:
 
-2. Send to `shape` function data in DT format and dataShape
+``` js
+let dataShape = { newName : ['firstName']}
 
+``` 
+This shape will build object where we will have property 'newName' with the value contained in 'firstName' key of the `source data`. Shape values can contain more than one member. 
 
+```js
+let shape = { newName : ['firstName','name'] }
+```
+This example says that result should have property 'newName' and value should be in key 'firstName' or 'name' of the `source data`. This make possible to use same `data shape` with large variety of `source data` objects and result will be the same.
+
+### Data Shape - Key Prefixes
+Keys can contain prefixes like `list!` and `fold!`.
+
+- `fold!` prefix will search for properties and will fold them inside object. Example
+
+```js
+
+// shape with fold
+let shape = { 'fold!name' : ['firstName','lastName']}
+
+/*
+ expected result should have
+ {
+    name : {
+                firstName : 'someValue'
+              , lastName : 'someOtherValue'
+           }
+ }
+*/
+ 
+```
+
+- `list!` prefix will return list of values
+```js
+
+// shape with fold
+let shape = { 'list!family' : ['spouse','wife','kid']}
+
+/*
+ expected result should have
+ {
+    family : [ 'manName', 'wifeName', 'eventualKidName' , 'OtherKid' ]
+ }
+*/
+ 
+```
 
 
 
@@ -78,6 +129,46 @@ Shape function returns a DT object. Methods available are described in [exportAP
 
 
 ## Examples 
+
+### Simple example
+
+```js
+const 
+       dtbox = require ('dt-toolbox')
+     , shape = require ( 'dt-shape' )
+     ;
+
+let source = {
+                firstName : 'Peter'
+              , familyName : 'Naydenov'
+           };
+
+// convert object to DT
+let dtSource = dtbox.init(source).value;
+
+// Prepare the map
+let userShape = {
+        'userName' : ['firstName'  ]
+        'profile/name'     : [ 'firstName' ]
+      , 'profile/lastName' : [ 'familyName']
+    }
+
+let user = shape ( dtSource, userShape ).build()
+
+/*
+  user should be:
+  { 
+      userName: 'Peter'
+    , profile: { 
+                   name: 'Peter'
+                 , lastName: 'Naydenov' 
+               } 
+  }
+*/
+
+
+```
+
 Find some examples in `./test` folder.
 
 
@@ -113,6 +204,9 @@ _(Nothing yet)_
 
 
 ## Release History
+
+### 0.0.2 (2017-02-17)
+ - [x] Just documentation update;
 
 ### 0.0.1 (2017-02-05)
  
