@@ -137,7 +137,7 @@ it ( 'Apply structure on different data sources', () => {
 
 
 
-it ( 'Operation: Fold' , () => {
+it ( 'Prefix Fold' , () => {
   // * Fold will collect sources in an object 
     let result;
     let st1 = { 
@@ -175,7 +175,7 @@ it ( 'Operation: Fold' , () => {
    expect ( result['name'] ).to.have.property ( 'firstName' )
    expect ( result['name'] ).to.have.property ( 'lastName' )
    expect ( result['name']['firstName'] ).to.be.equal ( 'Peter' )
-   
+
    expect ( result['hidden'] ).to.be.an ( 'object' )
    expect ( result['hidden'] ).to.have.property ( 'age' )
    expect ( result['hidden']['age'] ).to.be.equal ( 42 )
@@ -187,7 +187,7 @@ it ( 'Operation: Fold' , () => {
 
 
 
-it ( 'Operation: List' , () => {
+it ( 'Prefix List' , () => {
     let result;
     let st1 = { 
                 profile : {
@@ -226,6 +226,89 @@ it ( 'Operation: List' , () => {
    expect ( result['hidden'] ).to.contain ( 42 )
 
 }) // it list
+
+
+
+
+
+it ( 'Prefix Load: Primitives and Objects', () => {
+    let result;
+    let st1 = { 
+                profile : {
+                              'name'    : 'Peter'
+                            , 'sirname' : 'Naydenov'
+                            , 'age'     : 42
+                          }
+            }
+
+    let gender = 'male'
+    let name = [ 'List', 'of', 'items' ]
+    let structure = {
+                        'lastName'       : [ 'profile/sirname' , 'familyName' ]
+                      , 'load!firstName' : [ name ]
+                      , 'list!hidden'    : [ 'profile' ]
+                      , 'load!gender'    : [ gender ]
+                   }
+
+
+    dtbox
+      .init( st1 )
+      .spreadAll ( 'dt', dt => {
+                                   result = shape(dt, structure).build()
+                    })
+/*
+    Expected result:
+    {
+        lastName  : 'Naydenov'
+      , firstName : [ 'List', 'of', 'items' ]
+      , hidden    : [ 'Peter', 'Naydenov', 42 ]
+      , gender    : 'male'
+    }
+*/
+
+    expect ( result['firstName'] ).to.be.an    ( 'array' )
+    expect ( result['firstName'] ).to.contain  ( 'List'  )
+    expect ( result['gender']    ).to.be.equal ( 'male'  )
+}) // it load
+
+
+
+
+
+it ( 'Prefix Load: Overwrite values', () => {
+   let result;
+    let st1 = { 
+                profile : {
+                              'name'    : 'Peter'
+                            , 'sirname' : 'Naydenov'
+                            , 'age'     : 42
+                          }
+             }
+
+    let gender = 'male';
+    let name = ['list','of','items'];
+    
+    let structure = {
+                        'lastName'       : [ 'profile/sirname' , 'familyName' ]
+                      , 'load!firstName' : [ name ]
+                      , 'firstName'      : [ 'profile/name', 'firstName' ]
+                      , 'list!hidden'    : [ 'profile' ]
+                      , 'load!gender'    : [ ['strange','value'], gender ]
+                   }
+
+
+    dtbox
+      .init( st1 )
+      .spreadAll ( 'dt', dt => {
+                                   result = shape(dt, structure).build()
+                    })
+
+      expect ( result ).to.have.property ( 'lastName' )
+      expect ( result ).to.have.property ( 'firstName' )
+      expect ( result['firstName'] ).to.be.equal ( 'Peter' )
+      expect ( result ).to.have.property ( 'gender' )
+      expect ( result['gender'] ).to.be.equal ('male')
+}) // it load
 
 
 

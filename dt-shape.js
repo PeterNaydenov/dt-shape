@@ -4,8 +4,52 @@ let dtbox = require ( 'dt-toolbox' );
 
 
 let simple = {
-   getIterator : list => Object.getOwnPropertyNames ( list )
+     getIterator : list => Object.getOwnPropertyNames ( list )
+   , getType     : function notObject ( str ) {
+                        let result = false
+                        if ( typeof str == 'undefined' ) { result = 'undefined' }
+                        if ( typeof str == 'string'    ) { result = 'string'    }
+                        if ( typeof str == 'number'    ) { result = 'number'    }
+                        if ( typeof str == 'boolean'   ) { result = 'boolean'   }
+                        if ( typeof str == 'function'  ) { result = 'function'  }
+                        if ( result === false          ) { result = 'object'    } 
+                        return result
+      } // notObject func.
 } // simple
+
+
+
+
+function sanitize ( res, key ) {
+  let result;
+
+  let healthy = Object.keys(res).every ( el => !el.includes(key)   ) 
+  if ( !healthy ) {
+                     dtbox.loadFast(res)
+                          .select ()
+                          .folder ( key )
+                          .invert ()
+                          .spread ( 'dt', dt =>  result = dt  )
+      }
+  else               result = res
+  return result;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -26,6 +70,8 @@ function shape ( dt , maps ) {
                                                   , inData
                                                   ;
 
+                                              res = sanitize ( res, newKey )
+                                              
                                               inData = { 
                                                             data   : dt 
                                                           , search : maps[rKey]
@@ -34,14 +80,19 @@ function shape ( dt , maps ) {
 
                                               switch ( action ) {
                                                     case 'fold' :
-                                                                       res = Object.assign ( res, fold(inData) )
-                                                                       break;
+                                                                       res = Object.assign ( res, fold(inData)   )
+                                                                       break
                                                     case 'list'   :
-                                                                       res = Object.assign ( res, list(inData) )
-                                                                       break;
+                                                                       res = Object.assign ( res, list(inData)   )
+                                                                       break
+                                                    case 'load'   :
+                                                                      res = Object.assign ( res, load(inData)    )
+                                                                      break
                                                   } // switch action
                         } 
                    else {
+                          res = sanitize ( res, rKey )
+
                           maps[rKey].forEach ( findKey => {
                                                             if ( dt[`root/${findKey}`] )   
                                                                  res[`root/${rKey}`] = dt[`root/${findKey}`]   
@@ -60,7 +111,20 @@ function shape ( dt , maps ) {
 
 
 
-// -------------------------------------------------    ACTIONS
+
+
+
+
+
+
+
+
+
+
+
+
+
+// -------------------------------------------------    PREFIXES
 
 function fold ( inData ) {
     let result;
@@ -69,7 +133,7 @@ function fold ( inData ) {
          , prefix  = inData.prefix
          , search  = inData.search
          ;
-    
+
     result = search.reduce ( (res,item) => {
                  let fragment;
 
@@ -84,7 +148,8 @@ function fold ( inData ) {
                                      })
                  return Object.assign ( res, fragment )
                }, {})
-   return dtbox.init(result).value
+
+   return result
 } // fold func.
 
 
@@ -115,9 +180,48 @@ function list ( inData ) {
                  
                  return Object.assign ( res, fragment )
                }, {})
-   return dtbox.init(result).value
+   return result
+   // return dtbox.init(result).value
 } // fold func.
 
+
+
+
+
+function load ( inData ) {
+    let result = {};
+    let
+           data    = inData.data
+         , prefix  = inData.prefix
+         , search  = inData.search
+         ;
+
+    
+    search.forEach ( item => {
+        
+       let fragment;
+       let type = simple.getType ( item )
+    
+    if ( type === 'function' ) {
+                                 item = item()
+                                 type = simple.getType ( item )
+        }
+
+    if ( type !== 'undefined' ) {
+          if ( type === 'object' ) {
+                                       result = dtbox.init(item).value.map(el => el.replace('root',prefix))
+                  }
+          else    {
+                                      let obj = {}
+                                      obj[prefix] = item
+                                      result = dtbox.init(obj).value
+                  }
+
+      }
+  }) // for each search
+     
+   return result
+} // fold func.
 
 
 module.exports = shape

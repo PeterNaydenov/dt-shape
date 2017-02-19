@@ -1,5 +1,7 @@
 # DT Shape
 
+
+
 **WARNING: Experimental stage**
 
 Build data structures by using data shape. The data shape can look like that:
@@ -48,7 +50,7 @@ npm install dt-shape --save
 Once it has been installed, it can be used by writing this line of JavaScript:
 ```js
 
-let shape = require ( 'dt-shape')
+let dtShape = require ( 'dt-shape')
 
 ```
 
@@ -91,7 +93,6 @@ Keys can contain prefixes like `list!` and `fold!`.
 
 // shape with fold
 let shape = { 'fold!name' : ['firstName','lastName']}
-
 /*
  expected result should have
  {
@@ -109,7 +110,6 @@ let shape = { 'fold!name' : ['firstName','lastName']}
 
 // shape with fold
 let shape = { 'list!family' : ['spouse','wife','kid']}
-
 /*
  expected result should have
  {
@@ -117,6 +117,21 @@ let shape = { 'list!family' : ['spouse','wife','kid']}
  }
 */
  
+```
+
+
+- `load!` prefix loads data from external source. Source could be function, primitive or object.
+```js
+let name = 'Peter'
+let shape = { 'load!firstName' : [ name ] }
+let dt = dtbox.init ({ name : 'Ivo' })
+let result = dtShape ( dt, shape )
+/*
+ expected result
+ {
+   firstName : 'Peter'
+ }
+ */
 ```
 
 
@@ -205,8 +220,15 @@ _(Nothing yet)_
 
 ## Release History
 
-### 0.0.2 (2017-02-17)
+### 0.1.0 (2017-02-20)
+ - [x] Prefix `load!` loads data from external source;
+
+
+
+### 0.0.3 (2017-02-17)
  - [x] Just documentation update;
+
+
 
 ### 0.0.1 (2017-02-05)
  
