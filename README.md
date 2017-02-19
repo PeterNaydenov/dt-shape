@@ -8,13 +8,13 @@ Build data structures by using data shape. The data shape can look like that:
 
 ```js
 
-let dataShape  = {
-                   'name' : [ 'firstName' , 'name' ]
-/*                   ^            ^
-                     |            |
-                     |            +---> search for values in these keys
-                     |
-         Create key with this name
+let shape  = {
+                'name' : [ 'firstName' , 'name' ]
+/*                ^            ^
+                  |            |
+                  |            +---> search for values in these keys
+                  |
+      Create key with this name
                      
 */
                  }
@@ -50,7 +50,7 @@ npm install dt-shape --save
 Once it has been installed, it can be used by writing this line of JavaScript:
 ```js
 
-let dtShape = require ( 'dt-shape')
+let dtShape = require ( 'dt-shape' )
 
 ```
 
@@ -66,7 +66,7 @@ Source data should be DT object. Any standard javascript structure can be conver
 
 ```js
 
-let dt = dtbox.init( jsArray ).value
+let dt = dtbox.init( jsObject ).value
 
 ```
 
@@ -74,7 +74,7 @@ let dt = dtbox.init( jsArray ).value
 `Data shape` represents connection between `source data` and result object. Keys will become a result property names. Values are `source data` keys where shape function will search for data. Values of shape object are always **array**. Simple example:
 
 ``` js
-let dataShape = { newName : ['firstName']}
+let shape = { newName : ['firstName']}
 
 ``` 
 This shape will build object where we will have property 'newName' with the value contained in 'firstName' key of the `source data`. Shape values can contain more than one member. 
@@ -124,7 +124,7 @@ let shape = { 'list!family' : ['spouse','wife','kid']}
 ```js
 let name = 'Peter'
 let shape = { 'load!firstName' : [ name ] }
-let dt = dtbox.init ({ name : 'Ivo' })
+let dt = dtbox.init ({ name : 'Ivo' }).value
 let result = dtShape ( dt, shape )
 /*
  expected result
@@ -150,7 +150,7 @@ let result = dtShape ( dt, shape )
 ```js
 const 
        dtbox = require ('dt-toolbox')
-     , shape = require ( 'dt-shape' )
+     , dtShape = require ( 'dt-shape' )
      ;
 
 let source = {
@@ -168,7 +168,7 @@ let userShape = {
       , 'profile/lastName' : [ 'familyName']
     }
 
-let user = shape ( dtSource, userShape ).build()
+let user = dtShape ( dtSource, userShape ).build()
 
 /*
   user should be:
