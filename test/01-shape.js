@@ -312,6 +312,46 @@ it ( 'Prefix Load: Overwrite values', () => {
 
 
 
+
+
+it ( 'Update value failure' , () => {
+   // * If update requested but there is no new data
+  let result;
+
+  let st1 = { 
+                profile : {
+                              'name'    : 'Peter'
+                            , 'sirname' : 'Dimitrov'
+                            , 'age'     : 42
+                          }
+            }
+
+    let n = 'Yordan';
+
+    let structure = {
+                        'name/lastName'  : [ 'profile/sirname' , 'familyName' ]
+                      , 'load!name/firstName' : [ n ]
+                      , 'fold!name/firstName' : [ 'fail' ]
+                      , 'fold!hidden'    : [ 'age'  ]
+                   }
+
+  dtbox
+    .init ( st1 )
+    .spreadAll ( 'dt' , dt => {
+                                  result = shape ( dt, structure ).build()
+             })
+
+  expect ( result['name'] ).to.have.property( 'firstName' )
+  expect ( result['name'] ).to.have.property( 'lastName'  )
+
+  expect ( result['name']['firstName'] ).to.be.equal ( 'Yordan'   )
+  expect ( result['name']['lastName']  ).to.be.equal ( 'Dimitrov' )
+  expect ( result['hidden']['age']  ).to.be.equal ( 42 )
+
+}) // it update failure
+
+
+
 }) // describe
 
 

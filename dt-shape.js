@@ -14,7 +14,8 @@ let simple = {
                         if ( typeof str == 'function'  ) { result = 'function'  }
                         if ( result === false          ) { result = 'object'    } 
                         return result
-      } // notObject func.
+                  } // notObject func.
+   , length     : data => Object.keys ( data ).length
 } // simple
 
 
@@ -61,6 +62,11 @@ function shape ( dt , maps ) {
      ;
 
   result = replaceKeys.reduce ( (res,rKey) => {
+                   let 
+                          newRes
+                        , update
+                        , count = simple.length
+                        ;
 
                    if ( rKey.includes('!') ) {
                                               let 
@@ -70,7 +76,7 @@ function shape ( dt , maps ) {
                                                   , inData
                                                   ;
 
-                                              res = sanitize ( res, newKey )
+                                              newRes = sanitize ( res, newKey )
                                               
                                               inData = { 
                                                             data   : dt 
@@ -80,24 +86,27 @@ function shape ( dt , maps ) {
 
                                               switch ( action ) {
                                                     case 'fold' :
-                                                                       res = Object.assign ( res, fold(inData)   )
+                                                                       update = fold ( inData )
+                                                                       if ( count(update) !== 0 )   res = Object.assign ( res, update )
                                                                        break
                                                     case 'list'   :
-                                                                       res = Object.assign ( res, list(inData)   )
+                                                                       update = list ( inData )
+                                                                       if ( count(update) !== 0 )  res = Object.assign ( res, update )
                                                                        break
                                                     case 'load'   :
-                                                                      res = Object.assign ( res, load(inData)    )
+                                                                      update = load ( inData )
+                                                                      if ( count(update) !== 0 )   res = Object.assign ( res, update )
                                                                       break
                                                   } // switch action
                         } 
                    else {
-                          res = sanitize ( res, rKey )
+                          newRes = sanitize ( res, rKey )
 
-                          maps[rKey].forEach ( findKey => {
-                                                            if ( dt[`root/${findKey}`] )   
-                                                                 res[`root/${rKey}`] = dt[`root/${findKey}`]   
-                                    })
-                    
+                          update = maps[rKey].reduce ( (r,findKey) => {
+                                                            if ( dt[`root/${findKey}`] ) r[`root/${rKey}`] = dt[`root/${findKey}`]
+                                                            return r   
+                                                  },{})
+                          if ( count(update) !== 0 )   res = Object.assign ( newRes, update )
                    }
                    return res;
               }, dtbox.empty() )

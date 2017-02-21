@@ -220,8 +220,14 @@ _(Nothing yet)_
 
 ## Release History
 
+### 0.1.2 (2017-02-21)
+ - [x] Fix: Problematic updates with wrong values
+
+
+
 ### 0.1.0 (2017-02-20)
  - [x] Prefix `load!` loads data from external source;
+ - [ ] Error: Problematic updates with wrong values
 
 
 
