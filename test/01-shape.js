@@ -352,6 +352,42 @@ it ( 'Update value failure' , () => {
 
 
 
+
+it ( 'Update value succeed', () => {
+ let result;
+
+  let st1 = { 
+                profile : {
+                              'name'    : 'Peter'
+                            , 'sirname' : 'Dimitrov'
+                            , 'age'     : 42
+                          }
+            }
+
+    let n = ['Yordan','Ivan'];
+
+    let structure = {
+                        'name/lastName'  : [ 'profile/sirname' , 'familyName' ]
+                      , 'load!name/firstName' : [ n ]
+                      , 'fold!name/firstName' : [ 'profile/name' ]
+                      , 'fold!hidden'    : [ 'age'  ]
+                   }
+
+  dtbox
+    .init ( st1 )
+    .spreadAll ( 'dt' , dt => {
+                                  result = shape ( dt, structure ).build()
+             })
+
+  expect ( result['name'] ).to.have.property( 'firstName' )
+  expect ( result['name'] ).to.have.property( 'lastName'  )
+
+  expect ( result['name']['firstName']['name'] ).to.be.equal ( 'Peter'   )
+  expect ( result['name']['lastName']  ).to.be.equal ( 'Dimitrov' )
+  expect ( result['hidden']['age']  ).to.be.equal ( 42 )
+
+}) // it update succeed
+
 }) // describe
 
 
