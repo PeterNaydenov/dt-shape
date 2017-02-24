@@ -3,6 +3,9 @@
 let dtbox = require ( 'dt-toolbox' );
 
 
+
+
+
 let simple = {
      getIterator : list => Object.getOwnPropertyNames ( list )
    , getType     : function notObject ( str ) {
@@ -17,6 +20,7 @@ let simple = {
                   } // notObject func.
    , length     : data => Object.keys ( data ).length
 } // simple
+
 
 
 
@@ -67,7 +71,7 @@ function shape ( dt , maps ) {
                         , count = simple.length
                         ;
 
-                   if ( rKey.includes('!') ) {
+                   if ( rKey.includes('!') ) {  // We have prefix
                                                 let 
                                                       keyData = rKey.split('!')
                                                     , action = keyData[0]
@@ -94,20 +98,18 @@ function shape ( dt , maps ) {
                                                                        break
                                                       } // switch action
                                                 if ( count(update) !== 0 ) {
-                                                                               res = keyRemover ( res, theKey )
-                                                                               res = Object.assign ( res, update )
+                                                                       res = keyRemover ( res, theKey )
+                                                                       res = Object.assign ( res, update )
                                                    }  
                         } 
                    else {
-                          
-
                            update = maps[rKey].reduce ( (r,findKey) => {
                                                             if ( dt[`root/${findKey}`] ) r[`root/${rKey}`] = dt[`root/${findKey}`]
                                                             return r   
                                                   },{})
                            if ( count(update) !== 0 ) {
-                                                        res = keyRemover ( res, rKey )
-                                                        res = Object.assign ( res, update )
+                                                            res = keyRemover ( res, rKey )
+                                                            res = Object.assign ( res, update )
                               }   
                         }
                  return res;
@@ -149,20 +151,19 @@ function fold ( inData ) {
                  let fragment;
 
                  dtbox
-                     .load(data)
+                     .load   ( data )
                      .select ()
                      .folder ( item )
                      .spread ( 'dt', dt => { 
-                                              fragment = dt
-                                                          .assemble()
-                                                          .map(l => l.replace('root',`${prefix}`)  )
-                                     })
+                                               fragment = dt
+                                                           .assemble ()
+                                                           .map ( l => l.replace ( 'root', `${prefix}`)   )
+                                  })
                  return Object.assign ( res, fragment )
                }, {})
 
    return result
 } // fold func.
-
 
 
 
@@ -180,19 +181,18 @@ function list ( inData ) {
                  let fragment;
 
                  dtbox
-                     .load(data)
+                     .load ( data )
                      .select ()
                      .folder ( item )
                      .spread ( 'dt', dt => { 
                                               fragment = dt
-                                                          .assemble()
+                                                          .assemble ()
                                                           .map ( (l,i) => l.replace(l,`${prefix}/${i}`)   )
                                      })
                  
                  return Object.assign ( res, fragment )
                }, {})
    return result
-   // return dtbox.init(result).value
 } // fold func.
 
 
@@ -209,30 +209,29 @@ function load ( inData ) {
 
     
     search.forEach ( item => {
-        
-       let fragment;
-       let type = simple.getType ( item )
-    
-    if ( type === 'function' ) {
-                                 item = item()
-                                 type = simple.getType ( item )
-        }
+                     let fragment;
+                     let type = simple.getType ( item )
+                  
+                  if ( type === 'function' ) {
+                                               item = item ()
+                                               type = simple.getType ( item )
+                      }
 
-    if ( type !== 'undefined' ) {
-          if ( type === 'object' ) {
-                                       result = dtbox.init(item).value.map(el => el.replace('root',prefix))
-                  }
-          else    {
-                                      let obj = {}
-                                      obj[prefix] = item
-                                      result = dtbox.init(obj).value
-                  }
+                  if ( type !== 'undefined' ) {
+                        if ( type === 'object' ) {
+                                                    result = dtbox.init(item).value.map ( el => el.replace('root',prefix)   )
+                                }
+                        else    {
+                                                    let obj = {}
+                                                    obj[prefix] = item
+                                                    result = dtbox.init(obj).value
+                                }
 
-      }
-  }) // for each search
-     
+                    }
+          }) // for each search
    return result
 } // fold func.
+
 
 
 module.exports = shape

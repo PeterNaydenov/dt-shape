@@ -4,10 +4,10 @@
 
 **WARNING: Experimental stage**
 
-Build data structures by using data shape. The data shape can look like that:
+Build data structures by using data shape. The data shape should looks like that:
 
 ```js
-
+const dtShape = require ( 'dt-shape' )
 let shape  = {
                 'name' : [ 'firstName' , 'name' ]
 /*                ^            ^
@@ -18,15 +18,15 @@ let shape  = {
                      
 */
                  }
-     // Important! Data should be converted first in DT format.
+     // Important! Data should be in DT format. If is not - convert it first.
      // Use dt-toolbox library:
      let dt = dtbox.init(data).value
      
-     // Build data according dataShape. Result will be in DT format.
-     let resultDT = shape ( dt , dataShape )
+     // Build data according shape. Result will be in DT format.
+     let resultDT = dtShape ( dt , shape )
 
-     // If want it back as a standard javascript object:
-     let result = shape ( dt, dataShape ).build()
+     // If want result as a standard javascript object:
+     let result = dtShape ( dt, shape ).build()
 
 ```
 
@@ -71,23 +71,23 @@ let dt = dtbox.init( jsObject ).value
 ```
 
 ### Data Shape
-`Data shape` represents connection between `source data` and result object. Keys will become a result property names. Values are `source data` keys where shape function will search for data. Values of shape object are always **array**. Simple example:
+`Data shape` represents connection between `source data` and result object. Keys will become a result property names. Values are `source data` keys where dtShape function will search for data. Values of the shape object are always **array**. Simple example:
 
 ``` js
-let shape = { newName : ['firstName']}
+let shape = { 'newName' : ['firstName']}
 
 ``` 
 This shape will build object where we will have property 'newName' with the value contained in 'firstName' key of the `source data`. Shape values can contain more than one member. 
 
 ```js
-let shape = { newName : ['firstName','name'] }
+let shape = { 'newName' : ['firstName','name'] }
 ```
 This example says that result should have property 'newName' and value should be in key 'firstName' or 'name' of the `source data`. This make possible to use same `data shape` with large variety of `source data` objects and result will be the same.
 
 ### Data Shape - Key Prefixes
-Keys can contain prefixes like `list!` and `fold!`.
+Keys can contain prefixes like `list!`, `fold!`, and `load!`.
 
-- `fold!` prefix will search for properties and will fold them inside object. Example
+- `fold!` prefix will search for properties and will fold them inside object. Example:
 
 ```js
 
@@ -113,7 +113,7 @@ let shape = { 'list!family' : ['spouse','wife','kid']}
 /*
  expected result should have
  {
-    family : [ 'manName', 'wifeName', 'eventualKidName' , 'OtherKid' ]
+    family : [ 'spouseName', 'wifeName', 'eventualKidName' , 'OtherKidName' ]
  }
 */
  
@@ -124,7 +124,7 @@ let shape = { 'list!family' : ['spouse','wife','kid']}
 ```js
 let name = 'Peter'
 let shape = { 'load!firstName' : [ name ] }
-let dt = dtbox.init ({ name : 'Ivo' }).value
+let dt = { 'root/name' : 'Ivo' }
 let result = dtShape ( dt, shape )
 /*
  expected result
@@ -219,6 +219,9 @@ _(Nothing yet)_
 
 
 ## Release History
+
+### 0.1.4 (2017-02-24)
+ - [x] Documentation update only
 
 ### 0.1.2 (2017-02-21)
  - [x] Fix: Problematic updates with wrong values
