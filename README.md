@@ -220,6 +220,9 @@ _(Nothing yet)_
 
 ## Release History
 
+### 0.1.5 (2017-03-28)
+ - [x] Update dependency dt-toolbox to 1.4.0
+
 ### 0.1.4 (2017-02-24)
  - [x] Documentation update only
 
