@@ -1,13 +1,13 @@
 {
   "name": "dt-shape",
-  "version": "0.1.6",
+  "version": "1.0.0",
   "description": "Build data by using shapes",
   "main": "src/index.js",
   "scripts": {
-    "test": "mocha test",
-    "cover": "nyc mocha test",
-    "build": "webpack"
-  },
+        "test": "mocha test",
+        "cover": "nyc mocha test",
+        "build": "webpack"
+    },
   "keywords": [
     "dt",
     "structure",
