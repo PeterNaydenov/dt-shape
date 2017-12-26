@@ -1,32 +1,28 @@
 # DT Shape
 
-
-
-**WARNING: Experimental stage**
-
-Build data structures by using data shape. The data shape should looks like that:
+Build data structures by using data-shapes. The data-shape should looks like that:
 
 ```js
 const dtShape = require ( 'dt-shape' )
 let shape  = {
                 'name' : [ 'firstName' , 'name' ]
-/*                ^            ^
-                  |            |
+/*                ^            ^            ^
+                  |            |            +---> top priority is always in the end
                   |            +---> search for values in these keys
                   |
-      Create key with this name
+      Create property with this name
                      
 */
                  }
      // Important! Data should be in DT format. If is not - convert it first.
-     // Use dt-toolbox library:
+     // Use dt-toolbox library.:
      let dt = dtbox.init(data).value
      
      // Build data according shape. Result will be in DT format.
      let resultDT = dtShape ( dt , shape )
 
      // If want result as a standard javascript object:
-     let result = dtShape ( dt, shape ).build()
+     let result = dtShape ( dt, shape ).build ()
 
 ```
 
@@ -42,30 +38,42 @@ Read more about DT on [dt-toolbox page](https://github.com/PeterNaydenov/dt-tool
 
 ## Installation
 
-Install by writing in your terminal:
+### Node
+Install node package:
 ```
 npm install dt-shape --save
 ```
 
-Once it has been installed, it can be used by writing this line of JavaScript:
+Once it has been installed, it can be used by writing this line of JavaScript code:
 ```js
 
 let dtShape = require ( 'dt-shape' )
 
 ```
 
+### Browsers
+Copy 'dt-shape.min.js' from 'dist/' folder. Add script tag
+
+```html
+<script src='js/dt-shape.min.js'></script>
+// -> dtShape is available
+
+// dt-toolbox is part of this script file.
+dtbox = dtShape.getDTtoolbox ()
+
+```
 
 
 
 ## How it works?
-Shape is simple function that receives two arguments - (`source data`, `data shape`) and returns as a result DT object.
+`dtShape` is simple function that have two arguments - (`source data`, `data shape`) and returns a result DT object.
 Methods available for DT object are described in [exportAPI of dt-toolbox](https://github.com/PeterNaydenov/dt-toolbox).
 
 ### Source Data
-Source data should be DT object. Any standard javascript structure can be converted to DT by using dt-toolbox library.
+Source data should be DT object. Any standard javascript structure can be converted to DT by single row of code.
 
 ```js
-
+// use dt-toolbox
 let dt = dtbox.init( jsObject ).value
 
 ```
@@ -77,12 +85,14 @@ let dt = dtbox.init( jsObject ).value
 let shape = { 'newName' : ['firstName']}
 
 ``` 
-This shape will build object where we will have property 'newName' with the value contained in 'firstName' key of the `source data`. Shape values can contain more than one member. 
+This shape creates object with property 'newName'. Value for 'newName' is taken from  `source data` object, property 'firstName' . Shape values can contain more than one member.
 
 ```js
 let shape = { 'newName' : ['firstName','name'] }
 ```
-This example says that result should have property 'newName' and value should be in key 'firstName' or 'name' of the `source data`. This make possible to use same `data shape` with large variety of `source data` objects and result will be the same.
+This example says that result should have property 'newName' and value should be in keys 'firstName' or 'name' of the `source data`. This make possible to use same `data shape` with large variety of `source data` structures and result will be the same. Priority is always on last member of the array.
+
+
 
 ### Data Shape - Key Prefixes
 Keys can contain prefixes like `list!`, `fold!`, and `load!`.
@@ -95,12 +105,12 @@ Keys can contain prefixes like `list!`, `fold!`, and `load!`.
 let shape = { 'fold!name' : ['firstName','lastName']}
 /*
  expected result should have
- {
-    name : {
-                firstName : 'someValue'
-              , lastName : 'someOtherValue'
-           }
- }
+      {
+          name : {
+                      firstName : 'someValue'
+                    , lastName : 'someOtherValue'
+                }
+      }
 */
  
 ```
@@ -124,17 +134,15 @@ let shape = { 'list!family' : ['spouse','wife','kid']}
 ```js
 let name = 'Peter'
 let shape = { 'load!firstName' : [ name ] }
-let dt = { 'root/name' : 'Ivo' }
-let result = dtShape ( dt, shape )
+let sourceData = { 'root/name' : 'Ivo' }
+let result = dtShape ( sourceData, shape )
 /*
- expected result
- {
-   firstName : 'Peter'
- }
+ ->
+      {
+         firstName : 'Peter'
+      }
  */
 ```
-
-
 
 
 
@@ -149,8 +157,8 @@ let result = dtShape ( dt, shape )
 
 ```js
 const 
-       dtbox = require ('dt-toolbox')
-     , dtShape = require ( 'dt-shape' )
+        dtShape = require ( 'dt-shape' )
+     ,  dtbox   = dtShape.getDTtoolbox ()
      ;
 
 let source = {
@@ -161,9 +169,9 @@ let source = {
 // convert object to DT
 let dtSource = dtbox.init(source).value;
 
-// Prepare the map
+// Prepare the shape
 let userShape = {
-        'userName' : ['firstName'  ]
+        'userName'         : [ 'firstName' ]
         'profile/name'     : [ 'firstName' ]
       , 'profile/lastName' : [ 'familyName']
     }
@@ -220,23 +228,37 @@ _(Nothing yet)_
 
 ## Release History
 
+### 1.0.0 (2017-12-30)
+ - [x] Project folder reorganization;
+ - [x] Test coverage. Istanbul;
+ - [x] Version for browsers. Dt-toolbox included;
+ - [x] Documentation update;
+
+
+
 ### 0.1.6 (2017-04-22)
- - [x] Update dependency dt-toolbox to 1.6.0
+ - [x] Update dependency dt-toolbox to 1.6.0;
+
+
 
 ### 0.1.5 (2017-03-28)
- - [x] Update dependency dt-toolbox to 1.4.0
+ - [x] Update dependency dt-toolbox to 1.4.0;
+
+
 
 ### 0.1.4 (2017-02-24)
- - [x] Documentation update only
+ - [x] Documentation update only;
+
+
 
 ### 0.1.2 (2017-02-21)
- - [x] Fix: Problematic updates with wrong values
+ - [x] Fix: Problematic updates with wrong values;
 
 
 
 ### 0.1.0 (2017-02-20)
  - [x] Prefix `load!` loads data from external source;
- - [ ] Error: Problematic updates with wrong values
+ - [ ] Error: Problematic updates with wrong values;
 
 
 
@@ -246,7 +268,6 @@ _(Nothing yet)_
 
 
 ### 0.0.1 (2017-02-05)
- 
  - [x] Initial code;
  - [x] Test package;
  - [x] Documentation;

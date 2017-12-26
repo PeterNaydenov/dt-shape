@@ -1,10 +1,10 @@
 'use strict'
 
-var		 
-		  dtbox    = require ( 'dt-toolbox' )
-		, shape = require ( '../dt-shape')
-		, chai     = require ( 'chai'   )
-		, expect   = require ( 'chai'   ).expect
+const		 
+		  dtbox    = require ( 'dt-toolbox'   )
+		, dtShape  = require ( '../src/index' )
+		, chai     = require ( 'chai'         )
+		, expect   = chai.expect
 		;
 
 
@@ -31,7 +31,7 @@ it ( 'Shallow structure', () => {
 
   dtbox
       .init ( test )
-      .spreadAll ( 'dt', dt =>  result = shape(dt, newStructure).build()   )
+      .spreadAll ( 'dt', dt =>  result = dtShape(dt, newStructure).build()   )
 /*
     Expected result:
     {
@@ -68,7 +68,7 @@ it ( 'Deep structure' , () => {
                    }
     dtbox
       .init ( test )
-      .spreadAll ( 'dt', dt => result = shape(dt, structure).build() )
+      .spreadAll ( 'dt', dt => result = dtShape(dt, structure).build() )
 /*
     Expected result:
     {
@@ -109,11 +109,11 @@ it ( 'Apply structure on different data sources', () => {
 
    dtbox
        .init ( st1 )
-       .spreadAll ( 'dt', dt => result1 = shape(dt, structure).build()   )
+       .spreadAll ( 'dt', dt => result1 = dtShape(dt, structure).build()   )
 
    dtbox
        .init ( st2 )
-       .spreadAll ( 'dt', dt => result2 = shape(dt, structure).build()   )
+       .spreadAll ( 'dt', dt => result2 = dtShape(dt, structure).build()   )
 /*
     Expected result for both should be:
     {
@@ -167,7 +167,7 @@ it ( 'Prefix Fold' , () => {
    dtbox
       .init( st1 )
       .spreadAll ( 'dt', dt => {
-                                   result = shape(dt, structure).build()
+                                   result = dtShape(dt, structure).build()
                     })
    
    expect ( result ).to.have.property ( 'name' )
@@ -206,7 +206,7 @@ it ( 'Prefix List' , () => {
    dtbox
       .init( st1 )
       .spreadAll ( 'dt', dt => {
-                                   result = shape(dt, structure).build()
+                                   result = dtShape(dt, structure).build()
                     })
 /*
     Expected result:
@@ -254,7 +254,7 @@ it ( 'Prefix Load: Primitives and Objects', () => {
     dtbox
       .init( st1 )
       .spreadAll ( 'dt', dt => {
-                                   result = shape(dt, structure).build()
+                                   result = dtShape(dt, structure).build()
                     })
 /*
     Expected result:
@@ -269,7 +269,37 @@ it ( 'Prefix Load: Primitives and Objects', () => {
     expect ( result['firstName'] ).to.be.an    ( 'array' )
     expect ( result['firstName'] ).to.contain  ( 'List'  )
     expect ( result['gender']    ).to.be.equal ( 'male'  )
-}) // it load
+}) // it load: primitives and objects
+
+
+
+
+it ( 'Prefix Load: Function', () => {
+  const
+       st1 = { 
+              profile : {
+                            'name'    : 'Peter'
+                          , 'sirname' : 'Naydenov'
+                          , 'age'     : 42
+                        }
+          }
+      , dtst1 = dtbox.init ( st1 ).value
+      ;
+
+  let gender = () => undefined
+  let name = function () { return 'Peter Naydenov' }
+  let structure = {
+                      'lastName'       : [ 'profile/sirname' , 'familyName' ]
+                    , 'load!fullname' : [ name ]
+                    , 'list!hidden'    : [ 'profile' ]
+                    , 'load!gender'    : [ gender ]
+                 }
+
+  const result = dtShape ( dtst1, structure ).build ()
+
+  expect ( result.fullname ).to.be.a.equal ( 'Peter Naydenov' )
+  expect ( result ).to.not.have.property ( 'gender' )
+}) // it load: function
 
 
 
@@ -300,7 +330,7 @@ it ( 'Prefix Load: Overwrite values', () => {
     dtbox
       .init( st1 )
       .spreadAll ( 'dt', dt => {
-                                   result = shape(dt, structure).build()
+                                   result = dtShape(dt, structure).build()
                     })
 
       expect ( result ).to.have.property ( 'lastName' )
@@ -338,7 +368,7 @@ it ( 'Update value failure' , () => {
   dtbox
     .init ( st1 )
     .spreadAll ( 'dt' , dt => {
-                                  result = shape ( dt, structure ).build()
+                                  result = dtShape ( dt, structure ).build()
              })
 
   expect ( result['name'] ).to.have.property( 'firstName' )
@@ -376,7 +406,7 @@ it ( 'Update value succeed', () => {
   dtbox
     .init ( st1 )
     .spreadAll ( 'dt' , dt => {
-                                  result = shape ( dt, structure ).build()
+                                  result = dtShape ( dt, structure ).build()
              })
 
   expect ( result['name'] ).to.have.property( 'firstName' )
@@ -387,6 +417,13 @@ it ( 'Update value succeed', () => {
   expect ( result['hidden']['age']  ).to.be.equal ( 42 )
 
 }) // it update succeed
+
+
+
+it ( 'getDTtoolbox', () => {
+  const box = dtShape.getDTtoolbox();
+  expect ( box ).is.deep.equal ( dtbox )
+}) // it getDTtoolbox
 
 }) // describe
 

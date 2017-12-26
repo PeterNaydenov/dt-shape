@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Using Dt-Shape in the browser</title>
+    <script src="dt-shape.min.js"></script>
+    <style>
+        pre { 
+               padding : 10px;
+               background-color: #eee;
+            }
+    </style>
+</head>
+<body>
+    <h1>Using Dt-Shape in the browser</h1>
+    <p>
+        Dt-Shpae is available as 'dtShape' global variable. Dt-Shape depends on 'dt-toolbox'. Get
+        direct access to the library by calling "<strong>dtShape.getDTtoolbox()</strong>".
+    </p>
+    <h3>Example</h3>
+    <p></p>
+    <pre>
+        const hookNode = document.getElementById ( 'render' )
+        const dtbox = dtShape.getDTtoolbox()
+        
+        // deep structure is coming from the server
+        const user = [{
+                        profile: {
+                                     name: { first: 'Peter' }
+                                   , age : 43
+                                }
+                     }]
+        
+        // convert user to DT format
+        const dtUser = dtbox.init ( user ).value
+        
+        // define simple shape:
+        const shape = {
+                          'name' : [ '0/profile/name/first' ]
+                        , 'age'  : [ '0/profile/age' ]
+                      }
+
+        result = dtShape ( dtUser, shape ).build ()
+        hookNode.innerHTML = `${result.name} is ${result.age} years old.`
+    </pre>
+    <h3>Result</h3>
+    <p id="render"></p>
+<script>
+    var 
+        dtbox = dtShape.getDTtoolbox()
+      , hookNode = document.getElementById ( 'render' )
+      , user = [{
+                   profile: {
+                            name: { first: 'Peter' }
+                          , age : 43
+                      }
+               }]
+      , result
+      , shape
+      ;
+    shape = {
+                  'name' : [ '0/profile/name/first' ]
+                , 'age'  : [ '0/profile/age'  ]
+            }
+    
+    dtUser = dtbox.init(user).value
+    result = dtShape ( dtUser, shape ).build ()
+    hookNode.innerHTML = `${result.name} is ${result.age} years old.`
+</script>
+</body>
+</html>
