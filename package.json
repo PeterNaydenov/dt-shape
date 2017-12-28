@@ -1,6 +1,6 @@
 {
   "name": "dt-shape",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Build data by using shapes",
   "main": "src/index.js",
   "scripts": {
