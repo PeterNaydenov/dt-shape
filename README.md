@@ -228,9 +228,10 @@ _(Nothing yet)_
 
 ## Release History
 
-### 1.0.0 (2017-12-30)
+### 1.0.0 (2017-12-28)
  - [x] Project folder reorganization;
  - [x] Test coverage. Istanbul;
+ - [x] Test coverage on 100%;
  - [x] Version for browsers. Dt-toolbox included;
  - [x] Documentation update;
 
