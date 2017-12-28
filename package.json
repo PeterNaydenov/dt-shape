@@ -20,7 +20,7 @@
   "author": "Peter Naydenov",
   "license": "MIT",
   "dependencies": {
-    "dt-toolbox": "^1.8.0"
+    "dt-toolbox": "^2.0.0"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
