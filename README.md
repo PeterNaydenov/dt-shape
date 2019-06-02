@@ -228,6 +228,16 @@ _(Nothing yet)_
 
 ## Release History
 
+
+
+### 1.0.1 (2019-06-02)
+ - [x] Update dependencies: Dt-toolbox v.2.1.0;
+ - [x] Upgrade dependencies: Webpack v.4.32.2;
+ - [x] Browser version update;
+ - [x] Documentation update;
+
+
+
 ### 1.0.0 (2017-12-28)
  - [x] Project folder reorganization;
  - [x] Test coverage. Istanbul;
