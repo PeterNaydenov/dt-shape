@@ -1,41 +1,22 @@
 "use strict";
 
-const 
-        path    = require ( 'path'    )
-      , webpack = require ( 'webpack' )
-      ;
-
-const uglifyOptions = { 
-                          minimize : true
-                        , mangle   : true
-                      };
-
+const path = require ( 'path' );
+      
 
 
 module.exports = {
     entry: './src/index.js',
     output: {
           path: path.resolve(__dirname, 'dist')
+        , publicPath: '/'
         , filename: 'dt-shape.min.js'
         , library: 'dtShape'
-        , libraryTarget : 'umd'
-        , umdNamedDefine : true
     },
     module: {
-        rules: [{ 
-                  test: /\.js$/                
-                , use : {
-                              loader: 'babel-loader'
-                            , options : {
-                                              presets : ['env']                                            
-                                        }
-                        }
-               }]
-    },
-    plugins:  [
-                new webpack.optimize.UglifyJsPlugin ( uglifyOptions )
-              ] 
-               
+        rules: [
+           { test: /\.js$/, use : ['babel-loader'], exclude: /node-modules/ }
+          ]
+    }
 };
 
 

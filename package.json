@@ -4,9 +4,9 @@
   "description": "Build data by using shapes",
   "main": "src/index.js",
   "scripts": {
-    "test": "mocha test",
-    "cover": "nyc mocha test",
-    "build": "webpack"
+    "test": "mocha",
+    "cover": "nyc npm run test",
+    "build": "webpack --mode production"
   },
   "keywords": [
     "dt",
@@ -20,18 +20,20 @@
   "author": "Peter Naydenov",
   "license": "MIT",
   "dependencies": {
-    "dt-toolbox": "^2.0.0"
+    "dt-toolbox": "2.1.0"
   },
   "devDependencies": {
-    "babel-core": "^6.26.0",
-    "babel-loader": "^7.1.2",
-    "babel-preset-env": "^1.6.1",
-    "chai": "^4.1.2",
-    "mocha": "^4.0.1",
-    "nyc": "^11.4.1",
-    "webpack": "^3.10.0"
+    "@babel/core": "7.4.5",
+    "@babel/preset-env": "7.4.5",
+    "babel-loader": "8.0.6",
+    "chai": "4.2.0",
+    "mocha": "6.1.4",
+    "nyc": "14.1.1",
+    "webpack": "4.32.2",
+    "webpack-cli": "3.3.2"
   },
   "nyc": {
+    "all": true,
     "include": [
       "src/**/*.js"
     ],
