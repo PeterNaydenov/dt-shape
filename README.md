@@ -230,7 +230,7 @@ _(Nothing yet)_
 
 
 
-### 1.0.1 (2019-06-02)
+### 1.0.2 (2019-06-02)
  - [x] Update dependencies: Dt-toolbox v.2.1.0;
  - [x] Upgrade dependencies: Webpack v.4.32.2;
  - [x] Browser version update;
