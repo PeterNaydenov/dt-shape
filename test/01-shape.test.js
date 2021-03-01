@@ -1,8 +1,8 @@
 'use strict'
 
 const		 
-		  dtbox    = require ( 'dt-toolbox'   )
-		, dtShape  = require ( '../src/index' )
+      dtShape  = require ( '../src/index' )
+    , dtbox    = dtShape.getDTtoolbox ()
 		, chai     = require ( 'chai'         )
 		, expect   = chai.expect
 		;
@@ -28,24 +28,21 @@ it ( 'Shallow structure', () => {
                     , 'lastName'  : ['sirname', 'lastName' ] // array of possible data sources. Last overwrites previous.
                     //   ^-------  new key name
                   };
-
-  dtbox
-      .init ( test )
-      .spreadAll ( 'dt', dt =>  result = dtShape(dt, newStructure).build()   )
-/*
-    Expected result:
-    {
-        firstName : 'Peter'
-      , lastName  : 'Naydenov'
-    } 
-*/
+  let dt = dtbox.init ( test );
+      result = dtShape ( dt, newStructure )
+       /*
+          Expected result:
+            {
+                firstName : 'Peter'
+              , lastName  : 'Naydenov'
+            } 
+      */
       expect ( result ).to.have.property ( 'firstName' )
       expect ( result ).to.have.property ( 'lastName'  )
       
       expect ( result ).to.not.have.property ( 'age' )
       expect ( result ).to.not.have.property ( 'name' )
       expect ( result ).to.not.have.property ( 'sirname' )
-
   }) // it simple structure
 
 
@@ -53,26 +50,26 @@ it ( 'Shallow structure', () => {
 
 
 it ( 'Deep structure' , () => {
-   let result;
-   let test = {
-	            profile : {
-	                          name    : 'Peter'
-	                        , sirname : 'Naydenov'
-	                        , age     : 42
-	                     }
-	          }
-   let structure = {
-                        'firstName'         : ['profile/name']
-                      , 'lastName'          : ['profile/sirname']
-                      , 'personal-data/age' : ['profile/age']
-                   }
-    dtbox
-      .init ( test )
-      .spreadAll ( 'dt', dt => result = dtShape(dt, structure).build() )
+    let result;
+    let test = {
+                profile : {
+                              name    : 'Peter'
+                            , sirname : 'Naydenov'
+                            , age     : 42
+                        }
+              }
+    let structure = {
+                          'firstName'          : ['profile/name']
+                        , 'lastName'          : ['profile/sirname']
+                        , 'personal-data/age' : ['profile/age']
+                    }
+
+    let dt = dtbox.init ( test )
+    result = dtShape ( dt, structure )
 /*
     Expected result:
     {
-       firstName : 'Peter'
+        firstName : 'Peter'
       , lastName : 'Naydenov'
       , personal-data : { age : 42 }
     }  
@@ -89,7 +86,8 @@ it ( 'Deep structure' , () => {
 
 it ( 'Apply structure on different data sources', () => {
 	let result1,result2;
-	let st1 = { 
+	let 
+      st1 = { 
                 profile : {
                               'name'    : 'Peter'
                             , 'sirname' : 'Naydenov'
@@ -106,14 +104,15 @@ it ( 'Apply structure on different data sources', () => {
                       , 'lastName'          : [ 'profile/sirname' , 'familyName' ]
                       , 'personal-data/age' : [ 'profile/age']
                    }
+let
+     data1 = dtbox.init ( st1 )
+   , data2 = dtbox.init ( st2 )
+   ;
 
-   dtbox
-       .init ( st1 )
-       .spreadAll ( 'dt', dt => result1 = dtShape(dt, structure).build()   )
-
-   dtbox
-       .init ( st2 )
-       .spreadAll ( 'dt', dt => result2 = dtShape(dt, structure).build()   )
+  
+  result1 = dtShape ( data1, structure )
+  result2 = dtShape ( data2, structure )
+     
 /*
     Expected result for both should be:
     {
@@ -154,6 +153,8 @@ it ( 'Prefix Fold' , () => {
                       , 'fold!hidden'    : [ 'age' ]
                    }
 
+    let dt = dtbox.init ( st1 )
+    result = dtShape ( dt, structure )
 /*
     Expected result:
     {
@@ -164,12 +165,7 @@ it ( 'Prefix Fold' , () => {
        hidden : { age : 42 }
     }
 */
-   dtbox
-      .init( st1 )
-      .spreadAll ( 'dt', dt => {
-                                   result = dtShape(dt, structure).build()
-                    })
-   
+
    expect ( result ).to.have.property ( 'name' )
 
    expect ( result['name'] ).to.have.property ( 'firstName' )
@@ -203,11 +199,9 @@ it ( 'Prefix List' , () => {
                       , 'list!hidden'    : [ 'profile' ]
                    }
 
-   dtbox
-      .init( st1 )
-      .spreadAll ( 'dt', dt => {
-                                   result = dtShape(dt, structure).build()
-                    })
+   let dt = dtbox.init( st1 )
+   result = dtShape ( dt, structure )
+      
 /*
     Expected result:
     {
@@ -250,12 +244,8 @@ it ( 'Prefix Load: Primitives and Objects', () => {
                       , 'load!gender'    : [ gender ]
                    }
 
-
-    dtbox
-      .init( st1 )
-      .spreadAll ( 'dt', dt => {
-                                   result = dtShape(dt, structure).build()
-                    })
+let dt = dtbox.init ( st1 )
+result = dtShape ( dt, structure )
 /*
     Expected result:
     {
@@ -283,7 +273,7 @@ it ( 'Prefix Load: Function', () => {
                           , 'age'     : 42
                         }
           }
-      , dtst1 = dtbox.init ( st1 ).value
+      , dtst1 = dtbox.init ( st1 )
       ;
 
   let gender = () => undefined
@@ -295,7 +285,7 @@ it ( 'Prefix Load: Function', () => {
                     , 'load!gender'    : [ gender ]
                  }
 
-  const result = dtShape ( dtst1, structure ).build ()
+  const result = dtShape ( dtst1, structure )
 
   expect ( result.fullname ).to.be.a.equal ( 'Peter Naydenov' )
   expect ( result ).to.not.have.property ( 'gender' )
@@ -306,33 +296,29 @@ it ( 'Prefix Load: Function', () => {
 
 
 it ( 'Prefix Load: Overwrite values', () => {
-   let result;
-    let st1 = { 
-                profile : {
-                              'name'    : 'Peter'
-                            , 'sirname' : 'Naydenov'
-                            , 'age'     : 42
-                          }
-             }
+      let result;
+      let st1 = { 
+                  profile : {
+                                'name'    : 'Peter'
+                              , 'sirname' : 'Naydenov'
+                              , 'age'     : 42
+                            }
+              }
 
-    let gender = 'male';
-    let name = ['list','of','items'];
-    
-    let structure = {
-                        'lastName'       : [ 'profile/sirname' , 'familyName' ]
-                      , 'load!firstName' : [ name ]
-                      , 'firstName'      : [ 'profile/name', 'firstName' ]
-                      , 'list!hidden'    : [ 'profile' ]
-                      , 'load!gender'    : [ ['strange','value'], gender ]
-                   }
+      let gender = 'male';
+      let name = ['list','of','items'];
+      
+      let structure = {
+                           'lastName'       : [ 'profile/sirname' , 'familyName' ]
+                         , 'load!firstName'  : [ name ]
+                         , 'firstName'       : [ 'profile/name', 'firstName' ]
+                         , 'list!hidden'    : [ 'profile' ]
+                         , 'load!gender'    : [ ['strange','value'], gender ]
+                    }
 
+      let dt = dtbox.init ( st1 );
 
-    dtbox
-      .init( st1 )
-      .spreadAll ( 'dt', dt => {
-                                   result = dtShape(dt, structure).build()
-                    })
-
+      result = dtShape ( dt, structure )
       expect ( result ).to.have.property ( 'lastName' )
       expect ( result ).to.have.property ( 'firstName' )
       expect ( result['firstName'] ).to.be.equal ( 'Peter' )
@@ -364,12 +350,8 @@ it ( 'Update value failure' , () => {
                       , 'fold!name/firstName' : [ 'fail' ]
                       , 'fold!hidden'    : [ 'age'  ]
                    }
-
-  dtbox
-    .init ( st1 )
-    .spreadAll ( 'dt' , dt => {
-                                  result = dtShape ( dt, structure ).build()
-             })
+  let dt = dtbox.init ( st1 );
+  result = dtShape ( dt, structure )
 
   expect ( result['name'] ).to.have.property( 'firstName' )
   expect ( result['name'] ).to.have.property( 'lastName'  )
@@ -384,38 +366,33 @@ it ( 'Update value failure' , () => {
 
 
 it ( 'Update value succeed', () => {
- let result;
+      let result;
+      let 
+          st1 = { 
+                    profile : {
+                                  'name'    : 'Peter'
+                                , 'sirname' : 'Dimitrov'
+                                , 'age'     : 42
+                              }
+                }
+        , n = ['Yordan','Ivan']
+        , structure = {
+                             'name/lastName'  : [ 'profile/sirname' , 'familyName' ]
+                           , 'load!name/firstName' : [ n ]
+                           , 'fold!name/firstName' : [ 'profile/name' ]
+                           , 'fold!hidden'    : [ 'age'  ]
+                      }
+        ;
 
-  let st1 = { 
-                profile : {
-                              'name'    : 'Peter'
-                            , 'sirname' : 'Dimitrov'
-                            , 'age'     : 42
-                          }
-            }
+      let dt = dtbox.init ( st1 );
+      result = dtShape ( dt, structure )
 
-    let n = ['Yordan','Ivan'];
+      expect ( result['name'] ).to.have.property( 'firstName' )
+      expect ( result['name'] ).to.have.property( 'lastName'  )
 
-    let structure = {
-                        'name/lastName'  : [ 'profile/sirname' , 'familyName' ]
-                      , 'load!name/firstName' : [ n ]
-                      , 'fold!name/firstName' : [ 'profile/name' ]
-                      , 'fold!hidden'    : [ 'age'  ]
-                   }
-
-  dtbox
-    .init ( st1 )
-    .spreadAll ( 'dt' , dt => {
-                                  result = dtShape ( dt, structure ).build()
-             })
-
-  expect ( result['name'] ).to.have.property( 'firstName' )
-  expect ( result['name'] ).to.have.property( 'lastName'  )
-
-  expect ( result['name']['firstName']['name'] ).to.be.equal ( 'Peter'   )
-  expect ( result['name']['lastName']  ).to.be.equal ( 'Dimitrov' )
-  expect ( result['hidden']['age']  ).to.be.equal ( 42 )
-
+      expect ( result['name']['firstName']['name'] ).to.be.equal ( 'Peter'   )
+      expect ( result['name']['lastName']  ).to.be.equal ( 'Dimitrov' )
+      expect ( result['hidden']['age']  ).to.be.equal ( 42 )
 }) // it update succeed
 
 
