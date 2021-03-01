@@ -12,29 +12,33 @@ const
 const lib = {
 
     fold ( inData ) {
-        let result;
-        const
-               data    = inData.data
-             , prefix  = inData.prefix
-             , search  = inData.search
-             ;
-    
-        result = search.reduce ( (res,item) => {
-                     let fragment;
-    
-                     dtbox
-                         .load   ( data )
-                         .select ()
-                         .folder ( item )
-                         .spread ( 'dt', dt => { 
-                                                   fragment = dt
-                                                               .assemble ()
-                                                               .map ( l => l.replace ( 'root', `${prefix}`)   )
-                                      })
-                     return Object.assign ( res, fragment )
-                   }, {})
-    
-       return result
+        let 
+              { data, search, prefix } = inData
+            , source = dtbox.init ( data, { type: 'breadcrumbs'})
+            , folder = null
+            ;
+        search.forEach ( str => {
+                    source
+                        .select ()
+                        .find ( `/${str}` )
+                        .withSelection ()
+                        .flatten ()
+                        .spread ( 'files', x => {
+                                        let update = [];
+                                        x.forEach ( file => {
+                                                    let 
+                                                          dir = file.split ( '/' )
+                                                        , val = dir.pop ()
+                                                        , prop = dir.pop ()
+                                                        ;
+                                                    update.push ( `root/${prefix}/${prop}/${val}`)
+                                              })
+                                        dtbox
+                                           .init ( update, {type:'file'})
+                                           .spreadAll ( 'file', x => folder = x )
+                              })
+            })
+       return folder
     } // fold func.
     
     
@@ -42,29 +46,22 @@ const lib = {
     
     
     , list ( inData ) {
-        let result;
-        const
-               data    = inData.data
-             , prefix  = inData.prefix
-             , search  = inData.search
-             ;
-        
-        result = search.reduce ( (res,item) => {
-                     let fragment;
-    
-                     dtbox
-                         .load ( data )
+        let 
+              { data, search, prefix } = inData
+            , source = dtbox.init ( data, { type: 'breadcrumbs' })
+            , folder = {}
+            ;
+
+        search.forEach ( str => {
+                      source
                          .select ()
-                         .folder ( item )
-                         .spread ( 'dt', dt => { 
-                                                  fragment = dt
-                                                              .assemble ()
-                                                              .map ( (l,i) => l.replace(l,`${prefix}/${i}`)   )
-                                         })
-                     
-                     return Object.assign ( res, fragment )
-                   }, {})
-       return result
+                         .find ( `/${str}` )
+                         .spread ( 'value', x => {
+                                        let ln = x.length;
+                                        if ( ln > 0 )   folder = x.map ( y => `root/${prefix}/${y}`)
+                              })
+              })
+       return folder
     } // list func.
     
     
@@ -72,35 +69,34 @@ const lib = {
     
     
     , load ( inData ) {
-        let result = {};
-        const
-               data    = inData.data
-             , prefix  = inData.prefix
-             , search  = inData.search
-             ;
-        
+        let
+               { search, prefix } = inData
+             , folder = []
+             ;        
         search.forEach ( item => {
-                         let fragment;
-                         let type = help.getType ( item )
-                      
+                      let type = help.getType ( item )                      
+                      folder = []
                       if ( type === 'function' ) {
                                                    item = item ()
                                                    type = help.getType ( item )
                           }
-    
                       if ( type === 'undefined' ) return
                       if ( type === 'object' ) {
-                                                result = dtbox.init(item).value.map ( el => el.replace('root',prefix)   )
+                                                dtbox
+                                                   .init ( item )
+                                                   .spreadAll ( 'files', x => {
+                                                              let temp = {};
+                                                              temp [ prefix ] = x
+                                                              dtbox
+                                                                .init ( temp )
+                                                                .spreadAll ( 'files', x =>  folder = x.map ( y => `root/${y}` ))
+                                                          })
                             }
                       else  {
-                                                let obj = {}
-                                                obj[prefix] = item
-                                                result = dtbox.init(obj).value
+                                                folder.push ( `root/${prefix}/${item}` )
                             }
-    
-                        
               }) // for each search
-       return result
+        return folder
     } // load func.
 } // lib
 
