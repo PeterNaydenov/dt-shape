@@ -1,4 +1,4 @@
-# DT Shape
+# DT Shape v.1.x.x
 
 Build data structures by using data-shapes. The data-shape should looks like that:
 
