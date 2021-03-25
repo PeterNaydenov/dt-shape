@@ -215,6 +215,9 @@ _(Nothing yet)_
 
 ## Release History
 
+### 2.0.1 (2021-03-25)
+- [x] Update `dt-toolbox` to ver. 3.1.0;
+
 ### 2.0.0 (2021-03-01)
  - [x] Works with v.3.x.x of `dt-toolbox`;
  - [x] Changes in DT objects according v.3.x.x of dt-toolbox;
