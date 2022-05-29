@@ -215,7 +215,7 @@ _(Nothing yet)_
 
 ## Release History
 
-### 2.0.4 ( 2022-05-29)
+### 2.0.5 ( 2022-05-29)
 - [x] Update `dt-toolbox` to ver. 4.0.7;
 
 ### 2.0.3 (2022-03-07)
