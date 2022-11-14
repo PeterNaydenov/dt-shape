@@ -29,8 +29,7 @@ function keyRemover ( res, key ) {
 
 function dtShape ( dt , shape ) {
   let 
-       result
-     , newKeys = help.getIterator ( shape )
+       newKeys = help.getIterator ( shape )
      , breadcrumbsData
      , justData = {}
      , prefixData = []
@@ -73,6 +72,7 @@ function dtShape ( dt , shape ) {
                                   }
                             })
                 } // else hasPrefix
+                
             cleanItems.forEach ( prop => {
                       mixer
                         .select ()
@@ -80,6 +80,7 @@ function dtShape ( dt , shape ) {
                         .invert ()
                         .spread ( 'files', x => mixer = dtbox.init (x,{type:'files'}) )
                 })
+                
             cleanItems = []
             if ( prefixData.length > 0 ) {  
                       mixer.add ( prefixData, {type:'files'} )
@@ -88,7 +89,6 @@ function dtShape ( dt , shape ) {
             mixer.overwrite ( justData, {type:'breadcrumbs'})                
             justData = {}
     }) // forEach k
-
     let flatResult;
     mixer.spreadAll ( 'std', x => flatResult = x ) 
     return flatResult
