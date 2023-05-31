@@ -1,6 +1,5 @@
 # DT Shape v.2.x.x
 *Works with 'DT-Toolbox' up to version 5. It's incompatible with version 6 of the library*
-
 Build data structures by using data-shapes. The data-shape should looks like that:
 
 ```js
