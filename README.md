@@ -1,12 +1,11 @@
-# DT Shape v.2.x.x
-*Works with 'DT-Toolbox' up to version 5. It's incompatible with version 6 of the library*
+# DT Shape v.3.x.x
 
 Build data structures by using data-shapes. The data-shape should looks like that:
 
 ```js
 const dtShape = require ( 'dt-shape' )
 let shape  = {
-                'name' : [ 'firstName' , 'name' ]
+                'name' : [ 'firstName' , 'name' ] // -> list of possible sources
 /*                ^            ^            ^
                   |            |            +---> top priority is always in the end
                   |            +---> search for values in these keys
@@ -15,12 +14,16 @@ let shape  = {
                      
 */
                  }
-     // Important! Data should be in DT object. If is not - convert it first.
-     // Use dt-toolbox library.:
+     // Important! Data should be provided as dt-object. If is not - convert it first.
+     // dt-shape contains compatible version of dt-box.
+     const dtbox = dtShape.getDTtoolbox ()
+     // Use dt-toolbox library:
      let dt = dtbox.init(data)
      
-     // Build data according shape. Result will be a standard JS object.
+     // Build data according shape. Result will be a dt-object.
      let resultDT = dtShape ( dt , shape )
+     // If you need a standard JS object, dt-object has a convertor by calling a 'model' function:
+     let jsObject = dtShape ( dt, shape ).model (()=>({'as':'std'}))
 ```
 
 
@@ -42,21 +45,9 @@ npm install dt-shape --save
 ```
 
 Once it has been installed, it can be used by writing this line of JavaScript code:
+
 ```js
-
-let dtShape = require ( 'dt-shape' )
-
-```
-
-### Browsers
-Copy 'dt-shape.min.js' from 'dist/' folder. Add script tag
-
-```html
-<script src='js/dt-shape.min.js'></script>
-// -> dtShape is available
-
-// dt-toolbox is part of this script file.
-dtbox = dtShape.getDTtoolbox ()
+import dtShape from 'dt-shape'
 
 ```
 
@@ -66,7 +57,7 @@ dtbox = dtShape.getDTtoolbox ()
 `dtShape` is simple function that have two arguments - (`source data`, `data shape`) and returns a result as it explained in the data shape.
 
 ### Source Data
-Source data should be DT object. Any standard javascript structure can be converted to DT by single row of code.
+Source data should be dt-object. Any standard javascript structure can be converted to DT by single row of code.
 
 ```js
 // Always load dt-toolbox from dtShape library
@@ -138,7 +129,7 @@ const
     ;
 
 let sourceData = dtbox.init ({ 'root/name' : 'Ivo' });
-let result = dtShape ( sourceData, shape );
+let result = dtShape ( sourceData, shape ).model(()=>({as:'std'}));
 /*
  ->
       {
@@ -179,7 +170,7 @@ let userShape = {
       , 'profile/lastName' : [ 'familyName']
     }
 
-let user = dtShape ( dtSource, userShape )
+let user = dtShape ( dtSource, userShape ).model ( () => ({as:'std'}))
 
 /*
   user should be:
@@ -215,6 +206,10 @@ _(Nothing yet)_
 
 
 ## Release History
+
+### 3.0.0 ( 2023-06-02)
+- [x] Update `dt-toolbox` to ver. 6.0.0;
+- [x] Result is coming as a dt-object;
 
 ### 2.0.5 ( 2022-05-29)
 - [x] Update `dt-toolbox` to ver. 4.0.7;

@@ -1,11 +1,9 @@
 'use strict'
 
-const		 
-      dtShape  = require ( '../src/index' )
-    , dtbox    = dtShape.getDTtoolbox ()
-		, chai     = require ( 'chai'         )
-		, expect   = chai.expect
-		;
+import dtShape from '../src/main.js'
+import { expect } from 'chai'
+
+const	dtbox    = dtShape.getDTtoolbox ();
 
 
 
@@ -29,7 +27,7 @@ it ( 'Shallow structure', () => {
                     //   ^-------  new key name
                   };
   let dt = dtbox.init ( test );
-      result = dtShape ( dt, newStructure )
+      result = dtShape ( dt, newStructure ).model ( () => ({as:'std'}))
        /*
           Expected result:
             {
@@ -65,7 +63,7 @@ it ( 'Deep structure' , () => {
                     }
 
     let dt = dtbox.init ( test )
-    result = dtShape ( dt, structure )
+    result = dtShape ( dt, structure ).model ( () => ({as:'std'}))
 /*
     Expected result:
     {
@@ -100,7 +98,7 @@ it ( 'Apply structure on different data sources', () => {
 	          }
 
    let structure = {
-                        'firstName'         : ['profile/name', 'firstName' ]
+                        'firstName'         :  [ 'profile/name', 'firstName' ]
                       , 'lastName'          : [ 'profile/sirname' , 'familyName' ]
                       , 'personal-data/age' : [ 'profile/age']
                    }
@@ -110,14 +108,15 @@ let
    ;
 
   
-  result1 = dtShape ( data1, structure )
-  result2 = dtShape ( data2, structure )
-     
+  result1 = dtShape ( data1, structure ).model ( () => ({as:'std'}))
+  result2 = dtShape ( data2, structure ).model ( () => ({as:'std'}))
+
 /*
     Expected result for both should be:
     {
         firstName : 'Peter'
       , lastName  : 'Naydenov'
+      , 'personal-data' : {}
     }
   
   It's because key 'profile/age' does not exist
@@ -129,7 +128,7 @@ let
     expect ( result2 ).to.have.property ( 'firstName' ) 
     expect ( result2 ).to.have.property ( 'lastName'  ) 
     expect ( result2 ).to.not.have.property ( 'personal-data' ) 
- 
+     
 }) // it Different sources
 
 
@@ -154,7 +153,8 @@ it ( 'Prefix Fold' , () => {
                    }
 
     let dt = dtbox.init ( st1 )
-    result = dtShape ( dt, structure )
+    result = dtShape ( dt, structure ).model ( () =>({as:'std'}))
+  
 /*
     Expected result:
     {
@@ -200,7 +200,7 @@ it ( 'Prefix List' , () => {
                    }
 
    let dt = dtbox.init( st1 )
-   result = dtShape ( dt, structure )
+   result = dtShape ( dt, structure ).model ( () => ({as:'std'}))
       
 /*
     Expected result:
@@ -245,7 +245,8 @@ it ( 'Prefix Load: Primitives and Objects', () => {
                    }
 
 let dt = dtbox.init ( st1 )
-result = dtShape ( dt, structure )
+result = dtShape ( dt, structure ).model ( () => ({as:'std'}))
+
 /*
     Expected result:
     {
@@ -285,7 +286,7 @@ it ( 'Prefix Load: Function', () => {
                     , 'load!gender'    : [ gender ]
                  }
 
-  const result = dtShape ( dtst1, structure )
+  const result = dtShape ( dtst1, structure ).model ( () => ({as:'std'}))
 
   expect ( result.fullname ).to.be.a.equal ( 'Peter Naydenov' )
   expect ( result ).to.not.have.property ( 'gender' )
@@ -296,6 +297,7 @@ it ( 'Prefix Load: Function', () => {
 
 
 it ( 'Prefix Load: Overwrite values', () => {
+  // TODO: Need atention after extend 'dt-toolbox' with 'storage.cancel'
       let result;
       let st1 = { 
                   profile : {
@@ -318,7 +320,7 @@ it ( 'Prefix Load: Overwrite values', () => {
 
       let dt = dtbox.init ( st1 );
 
-      result = dtShape ( dt, structure )
+      result = dtShape ( dt, structure ).model ( () => ({as:'std'}))
       expect ( result ).to.have.property ( 'lastName' )
       expect ( result ).to.have.property ( 'firstName' )
       expect ( result['firstName'] ).to.be.equal ( 'Peter' )
@@ -351,7 +353,7 @@ it ( 'Update value failure' , () => {
                       , 'fold!hidden'    : [ 'age'  ]
                    }
   let dt = dtbox.init ( st1 );
-  result = dtShape ( dt, structure )
+  result = dtShape ( dt, structure ).model ( () => ({as:'std'}))
 
   expect ( result['name'] ).to.have.property( 'firstName' )
   expect ( result['name'] ).to.have.property( 'lastName'  )
@@ -385,7 +387,7 @@ it ( 'Update value succeed', () => {
         ;
 
       let dt = dtbox.init ( st1 );
-      result = dtShape ( dt, structure )
+      result = dtShape ( dt, structure ).model ( () => ({as:'std'}))
 
       expect ( result['name'] ).to.have.property( 'firstName' )
       expect ( result['name'] ).to.have.property( 'lastName'  )
