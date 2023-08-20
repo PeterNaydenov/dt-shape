@@ -207,6 +207,9 @@ _(Nothing yet)_
 
 ## Release History
 
+### 3.0.1 ( 2023-08-20)
+- [x] Update `dt-toolbox` to ver. 7.0.0;
+
 ### 3.0.0 ( 2023-06-02)
 - [x] Update `dt-toolbox` to ver. 6.0.0;
 - [x] Result is coming as a dt-object;
