@@ -1,5 +1,8 @@
 # DT Shape v.3.x.x
 
+![version](https://img.shields.io/github/package-json/v/peterNaydenov/dt-shape)
+![license](https://img.shields.io/github/license/peterNaydenov/dt-shape)
+
 Build data structures by using data-shapes. The data-shape should looks like that:
 
 ```js
@@ -207,8 +210,8 @@ _(Nothing yet)_
 
 ## Release History
 
-### 3.0.1 ( 2023-08-20)
-- [x] Update `dt-toolbox` to ver. 7.0.0;
+### 3.0.1 ( 2023-10-10)
+- [x] Update `dt-toolbox` to ver. 7.2.0;
 
 ### 3.0.0 ( 2023-06-02)
 - [x] Update `dt-toolbox` to ver. 6.0.0;
