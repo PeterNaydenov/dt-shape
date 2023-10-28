@@ -20,7 +20,7 @@
   "author": "Peter Naydenov",
   "license": "MIT",
   "dependencies": {
-    "dt-toolbox": "7.2.0"
+    "dt-toolbox": "7.3.0"
   },
   "devDependencies": {
     "c8": "^8.0.1",
