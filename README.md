@@ -210,6 +210,9 @@ _(Nothing yet)_
 
 ## Release History
 
+### 3.0.2 ( 2023-11-03)
+- [x] Update `dt-toolbox` to ver. 7.4.0;
+
 ### 3.0.1 ( 2023-10-10)
 - [x] Update `dt-toolbox` to ver. 7.2.0;
 
