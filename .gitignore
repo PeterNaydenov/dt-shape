@@ -1,0 +1,12 @@
+# Top 10 gitignore rules
+.DS_Store
+Thumbs.db
+.AppleDouble
+.LSOverride
+
+.idea/
+.vscode/
+node_modules/
+dist/
+build/
+*.log
