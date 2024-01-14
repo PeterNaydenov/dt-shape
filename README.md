@@ -210,24 +210,45 @@ _(Nothing yet)_
 
 ## Release History
 
+
+
+### 3.0.3 ( 2024-01-14)
+- [x] Dependency update. `dt-toolbox` to ver. 7.4.1;
+- [x] Dev dependencies update. Chai@5.0.0;
+- [x] Dev dependencies update. C8@9.1.0;
+
+
+
 ### 3.0.2 ( 2023-11-03)
 - [x] Update `dt-toolbox` to ver. 7.4.0;
 
+
+
 ### 3.0.1 ( 2023-10-10)
 - [x] Update `dt-toolbox` to ver. 7.2.0;
+
+
 
 ### 3.0.0 ( 2023-06-02)
 - [x] Update `dt-toolbox` to ver. 6.0.0;
 - [x] Result is coming as a dt-object;
 
+
+
 ### 2.0.5 ( 2022-05-29)
 - [x] Update `dt-toolbox` to ver. 4.0.7;
+
+
 
 ### 2.0.3 (2022-03-07)
 - [x] Update `dt-toolbox` to ver. 4.0.6;
 
+
+
 ### 2.0.1 (2021-03-25)
 - [x] Update `dt-toolbox` to ver. 3.1.0;
+
+
 
 ### 2.0.0 (2021-03-01)
  - [x] Works with v.3.x.x of `dt-toolbox`;
