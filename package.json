@@ -1,20 +1,20 @@
 {
   "name": "dt-shape",
   "description": "Build data by using shapes",
-  "version": "3.0.3",
+  "version": "3.1.0",
   "license": "MIT",
   "author": "Peter Naydenov",
   "main": "./dist/dt-shape.umd.js",
   "type": "module",
   "exports": {
     ".": {
-            "import" : "./dist/dt-shape.esm.mjs",
-            "require": "./dist/dt-shape.cjs",
-            "default": "./dist/dt-shape.umd.js"
-          },
-      "./package.json": "./package.json",
-      "./dist/*": "./dist/*",
-      "./src/*": "./src/*"
+      "import": "./dist/dt-shape.esm.mjs",
+      "require": "./dist/dt-shape.cjs",
+      "default": "./dist/dt-shape.umd.js"
+    },
+    "./package.json": "./package.json",
+    "./dist/*": "./dist/*",
+    "./src/*": "./src/*"
   },
   "scripts": {
     "test": "mocha",
@@ -30,7 +30,6 @@
     "type": "git",
     "url": "git+https://github.com/PeterNaydenov/dt-shape.git"
   },
-  
   "dependencies": {
     "dt-toolbox": "7.4.2"
   },
