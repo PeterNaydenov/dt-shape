@@ -20,11 +20,11 @@
   "author": "Peter Naydenov",
   "license": "MIT",
   "dependencies": {
-    "dt-toolbox": "7.4.1"
+    "dt-toolbox": "7.4.2"
   },
   "devDependencies": {
     "c8": "^9.1.0",
-    "chai": "5.0.0",
+    "chai": "5.0.3",
     "mocha": "10.2.0"
   },
   "c8": {
