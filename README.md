@@ -54,6 +54,12 @@ import dtShape from 'dt-shape'
 
 ```
 
+or require it:
+
+```js
+const dtShape = require ( 'dt-shape' )
+```
+
 
 
 ## How it works?
@@ -209,6 +215,14 @@ _(Nothing yet)_
 
 
 ## Release History
+
+
+
+### 3.1.0 ( 2024-02-03 )
+- [x] Dependency update. `dt-toolbox` to ver. 7.4.2;
+- [x] Folder 'dist' was added to the project. Includes commonjs, umd and esm versions of the library;
+ - [x] Package.json: "exports" section was added. Allows you to use package as commonjs or es6 module without additional configuration;
+ - [x] Rollup was added to the project. Used to build the library versions;
 
 
 

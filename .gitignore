@@ -8,6 +8,5 @@ Thumbs.db
 .vscode/
 node_modules/
 coverage/
-dist/
 build/
 *.log

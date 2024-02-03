@@ -1,12 +1,25 @@
 {
   "name": "dt-shape",
-  "version": "3.0.3",
   "description": "Build data by using shapes",
-  "main": "src/main.js",
+  "version": "3.0.3",
+  "license": "MIT",
+  "author": "Peter Naydenov",
+  "main": "./dist/dt-shape.umd.js",
   "type": "module",
+  "exports": {
+    ".": {
+            "import" : "./dist/dt-shape.esm.mjs",
+            "require": "./dist/dt-shape.cjs",
+            "default": "./dist/dt-shape.umd.js"
+          },
+      "./package.json": "./package.json",
+      "./dist/*": "./dist/*",
+      "./src/*": "./src/*"
+  },
   "scripts": {
     "test": "mocha",
-    "cover": "c8 npm test"
+    "cover": "c8 npm test",
+    "build": "rollup -c"
   },
   "keywords": [
     "dt",
@@ -17,15 +30,18 @@
     "type": "git",
     "url": "git+https://github.com/PeterNaydenov/dt-shape.git"
   },
-  "author": "Peter Naydenov",
-  "license": "MIT",
+  
   "dependencies": {
     "dt-toolbox": "7.4.2"
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "^0.4.4",
     "c8": "^9.1.0",
     "chai": "5.0.3",
-    "mocha": "10.2.0"
+    "mocha": "10.2.0",
+    "rollup": "^4.9.6"
   },
   "c8": {
     "all": true,
