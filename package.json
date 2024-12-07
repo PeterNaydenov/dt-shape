@@ -31,7 +31,7 @@
     "url": "git+https://github.com/PeterNaydenov/dt-shape.git"
   },
   "dependencies": {
-    "dt-toolbox": "7.4.2"
+    "dt-toolbox": "7.4.3"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^28.0.1",
@@ -39,8 +39,8 @@
     "@rollup/plugin-terser": "^0.4.4",
     "c8": "^10.1.2",
     "chai": "5.1.2",
-    "mocha": "10.8.2",
-    "rollup": "^4.27.2"
+    "mocha": "11.0.1",
+    "rollup": "^4.28.1"
   },
   "c8": {
     "all": true,
