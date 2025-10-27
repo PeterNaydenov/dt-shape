@@ -1,7 +1,7 @@
 {
   "name": "dt-shape",
   "description": "Build data by using shapes",
-  "version": "3.1.2",
+  "version": "3.1.3",
   "license": "MIT",
   "author": "Peter Naydenov",
   "main": "./dist/dt-shape.umd.js",
