@@ -36,7 +36,7 @@ function dtShape ( dt , shape ) {
                                                 list.forEach ( el => {
                                                             let 
                                                                   container = null
-                                                                , hasLine = ( dt.index(`root/${el}`) != null )
+                                                                , hasLine = ( dt.export(`root/${el}`).length > 0 )
                                                                 ;
 
                                                             if ( hasLine ) {
