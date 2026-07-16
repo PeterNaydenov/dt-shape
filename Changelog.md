@@ -2,6 +2,11 @@
 
 
 
+### 3.1.5 ( 2026-07-17)
+- [x] Update a 'dt-toolbox' library to version 7.4.7;
+
+
+
 ### 3.1.4 ( 2026-07-14)
 - [x] Update a 'dt-toolbox' library to version 7.4.6;
 - [x] Dev dependencies updates;
