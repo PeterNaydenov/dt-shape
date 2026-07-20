@@ -1,6 +1,10 @@
 ## Release History
 
 
+### 3.1.6 ( 2026-07-20)
+- [x] Update a 'dt-toolbox' library to version 7.4.8;
+
+
 
 ### 3.1.5 ( 2026-07-17)
 - [x] Update a 'dt-toolbox' library to version 7.4.7;
