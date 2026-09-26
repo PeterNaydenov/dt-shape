@@ -41,7 +41,7 @@
     "url": "git+https://github.com/PeterNaydenov/dt-shape.git"
   },
   "dependencies": {
-    "dt-toolbox": "7.5.0"
+    "dt-toolbox": "7.5.1"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^29.0.3",
