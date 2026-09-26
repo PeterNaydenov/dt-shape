@@ -1,6 +1,11 @@
 ## Release History
 
 
+### 3.2.1 ( 2026-09-26)
+- [x] Update a 'dt-toolbox' library to version 7.5.1;
+
+
+
 ### 3.2.0 ( 2026-09-02)
 - [x] Update a 'dt-toolbox' library to version 7.5.0;
 - [x] Package skill available in 'skills' folder;
