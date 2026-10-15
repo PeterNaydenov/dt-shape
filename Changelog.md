@@ -1,6 +1,29 @@
 ## Release History
 
 
+
+### 4.0.0 ( 2026-10-15)
+- [x] Breaking: Dependency update. `dt-toolbox` to version 8.1.2. `dtShape.getDTtoolbox()` returns dt-toolbox v.8: `init` throws on an unsupported model name (was: returns `null`), `dt.copy()` returns primitive values first, `getWalk()` returns walk v.7 (`IGNORE` became `IGNORE()`). See `Migration.guide.md`;
+- [x] Breaking: Only real values. `null`, `undefined`, empty objects and empty arrays are ignored: they don't overwrite a found value (default mode and `load!`), they are not collected by `list!` and `fold!` (before: `null` items and a `"null": null` property), and they are removed from copied objects. Copied arrays keep their positions: a position without a real value is `null`. Use `list!` for a list without empty places. See `Migration.guide.md`;
+- [x] Breaking: A number in an output path creates an array: `{ 'coords/0': ['lat'], 'coords/1': ['lng'] }` gives `{ coords: [ 42, 23 ] }` (was: `{ coords: { 0: 42, 1: 23 } }`). Arrays have no gaps: missing positions get `null`;
+- [x] Breaking: Output paths. Shape keys are applied in order. An object written to an output path that already has an object is merged with it. Other values replace the existing value (the later shape key wins). Before, the result depended on the order in unexpected ways, and output paths with the same name in different places (e.g. `x/name` and `y/x/age`) were mixed;
+- [x] Fix: Objects and arrays are copied completely. Before, nested objects and arrays were lost, or became `null` inside arrays. `list!` and `fold!` also get the nested objects and arrays as values;
+- [x] Feature: TypeScript type declarations, generated from JSDoc in `src` with TypeScript 7 (`npm run build:types`). `types/main.d.ts` for ES modules and `types/main.d.cts` for CommonJS/UMD (created by `scripts/build-cts-types.js`), wired through `types` and the `exports` conditions in `package.json`. Shape keys are type-checked: `load!` keys accept any values, other keys accept only source paths. Verified with `@arethetypeswrong/cli`;
+- [x] Feature: Default values. `dtShape ( dt, shape, defaults )` - optional object with default values by output path (e.g. `{ 'profile/age': 0, tags: [] }`). Defaults are used when the shape finds no real value, so the result keeps all keys. `null`, `[]` and `{}` are valid defaults. The defaults object is not changed. Array defaults fill the empty positions: a whole array as a template (`{ coords: [ 0, 0, 0, 0 ] }`) or a specific position (`{ 'coords/2': 0 }`). Specific defaults win over general ones;
+- [x] Feature: `Migration.guide.md` - how to upgrade from v.3.x.x;
+- [x] Fix: A source property or a `load!` member with value `null` threw `TypeError: Cannot convert undefined or null to object`;
+- [x] Fix: `Date` and `RegExp` source values are regular values. Before, `dtbox.init` threw "Circular reference detected";
+- [x] Fix: Shared object references (`{ a: shared, b: shared }`) and keys with RegExp special characters (e.g. `'a(b'`) work. Before, `dtbox.init` threw. Fixed by dt-toolbox v.8;
+- [x] Breaking: Source paths with a parent read exactly that place. A missing parent means "not found" (was: the last name was searched in the whole source, e.g. `'contact/email'` found `profile/email`). Array positions can be read: `'coords/0'`. A key without a path still searches the whole source;
+- [x] Breaking: Wrong arguments throw clear errors: source that is not a dt-object, shape that is not an object, shape value that is not a list, unknown prefix (e.g. `'lsit!'`, was silently ignored), more than one prefix, source paths that are not strings, defaults that are not an object;
+- [x] Breaking: The source dt-object needs dt-toolbox 8.1 or newer, because the result is built with `store.set` by path. A dt-object from an older dt-toolbox throws an error instead of losing nested data. Create the source with `dtShape.getDTtoolbox().init ( data )`;
+- [x] Performance: dt-shape is a query function. It reads only the source dt-lines that the shape needs (`store.get`, `store.from`, and `store.look` for keys without a path) and writes the result dt-lines by path, without converting the data to standard JS objects and back. Compared with v.3.2.1: 1.3x - 3.8x faster on small (3 users), medium (200) and large (2000 users, ~8000 dt-lines) data. Copying large objects and arrays takes longer, because v.3.2.1 didn't copy the nested data at all;
+- [x] Fix: Skill docs. Removed non-existing `as: 'keep'` and `as: 'object'` model options. Unprefixed and `load!` keys take the LAST source, not the first. Documented the "only real values" rule. Fixed `list!` docs: it collects the values of an object or array, it doesn't push the container;
+- [x] Tests: Regression tests for real values (`null`, `undefined`, empty structures), `Date`/`RegExp`, nested copy, output paths, defaults, array positions, source paths and argument errors;
+- [x] Tests: `test/02-skill.test.js` runs every code example in the skill and checks its documented result, so the skill stays in sync with the library; Type tests in `test/types` (`npm run test:types`);
+
+
+
 ### 3.2.1 ( 2026-09-26)
 - [x] Update a 'dt-toolbox' library to version 7.5.1;
 
