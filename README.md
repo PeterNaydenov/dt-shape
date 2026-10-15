@@ -1,4 +1,4 @@
-# DT Shape v.3.x.x
+# DT Shape
 
 ![version](https://img.shields.io/github/package-json/v/peterNaydenov/dt-shape)
 ![license](https://img.shields.io/github/license/peterNaydenov/dt-shape)
