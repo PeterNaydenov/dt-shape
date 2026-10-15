@@ -31,7 +31,7 @@ const dtbox = dtShape.getDTtoolbox()
 const source  = dtbox.init({ profile: { name: 'Peter', sirname: 'Naydenov' } })
 const shape   = { firstName: ['profile/name'], lastName: ['profile/sirname'] }
 const result  = dtShape(source, shape).model(() => ({ as: 'std' }))
-// result === { firstName: 'Peter', lastName: 'Naydenov' }
+// result → { firstName: 'Peter', lastName: 'Naydenov' }
 ```
 
 The result is a dt-object — call `.model(...)` to get a plain JS value.
@@ -40,6 +40,11 @@ For the source to be readable by dt-shape, it must first be converted via
 `dtShape.getDTtoolbox().init(plainObject)`. The same toolbox instance is
 also what you can reach into for higher-level dt-toolbox operations later.
 
+TypeScript types ship with the package (`types/main.d.ts`, `types/main.d.cts`).
+Exported types: `Shape`, `ShapeOf`, `Defaults`, `DTObject`, `DtBox` (in CommonJS:
+`dtShape.Shape`, etc.). Shape literals are checked per key — source paths
+must be strings; `load!` keys accept any values or functions.
+
 
 ## Mental model — read this before writing code
 
@@ -47,26 +52,34 @@ also what you can reach into for higher-level dt-toolbox operations later.
   values are arrays of candidate source paths. The shape does not run
   arbitrary code; it just maps paths to output slots.
 - **Priority is on the LAST element of the array.** `[ 'a', 'b' ]` means
-  "try `a` first, fall back to `b` if `a` is missing" — and if both
-  exist, `b` wins. This is opposite of the usual "first non-null"
+  "use `b`, fall back to `a` if `b` has no value" — if both exist,
+  `b` wins. This is opposite of the usual "first non-null"
   convention, so always double-check before adding fallbacks.
 - **Path strings use `/` as the segment separator.** `profile/name` means
   `source.profile.name`. There is no escaping; `/` is not allowed in
   source keys. For output nesting, use the same `/` in the shape KEY:
-  `'a/b'` produces `{ a: { b: value } }`.
-- **Missing sources are silently dropped.** If none of the listed paths
-  resolve, the output key is absent — no `null`, no `undefined`, no
-  empty string. The same applies to a `load!` function returning
-  `undefined`/`null`. Build your output defensively, or check the result
-  before serialising.
+  `'a/b'` produces `{ a: { b: value } }`. A source path with a parent
+  reads exactly that place (`'coords/0'` reads an array position); a
+  key without a path (`'name'`) searches the whole source.
+- **Only real values count.** `null`, `undefined`, empty objects and
+  empty arrays are NOT values: they never overwrite a found value, are
+  never collected by `list!`/`fold!`, never win in `load!`, and are
+  removed from copied objects. `0`, `''` and `false` ARE values.
+  Copied ARRAYS keep their positions (`[1, null, 3]` stays as is); use
+  `list!` for a compact list (`[1, 3]`). A number in an output path
+  creates an array: `'coords/0'`, `'coords/1'` → `{ coords: [ … ] }`.
+  If no listed source has a real value, the output key is absent — no
+  `null`, no `undefined`. To keep every key, pass `defaults` as the
+  third argument: `dtShape(dt, shape, { b: 0, tags: [] })`. Defaults
+  are used as they are (`null`, `[]`, `{}` included).
 - **Result is a dt-object, not a plain object.** The return value of
   `dtShape(dt, shape)` is a dt-object. To get a plain JS value, call
-  `.model(() => ({ as: 'std' }))` (or `as: 'keep'`, `as: 'object'` —
-  see `references/dt-object-integration.md`).
+  `.model(() => ({ as: 'std' }))` (other representations such as
+  `'breadcrumbs'` or `'tuples'` — see `references/dt-object-integration.md`).
 - **Three prefixes change the collection mode:** `fold!` collects
   resolved values into an object, `list!` collects them into an array,
   `load!` evaluates items as functions/values and skips the dt-object
-  entirely. Unprefixed keys collect the FIRST non-null value.
+  entirely. Unprefixed keys take the LAST source with a real value.
 - **The shape is also a record of intent.** Because the same shape can
   be applied to many different source objects (test fixture, production
   data, mock), the shape is a stable contract between systems — keep it
@@ -83,8 +96,11 @@ also what you can reach into for higher-level dt-toolbox operations later.
 import dtShape from 'dt-shape'
 const dtbox = dtShape.getDTtoolbox()       // always go through dtShape
 
-// Source may be a plain object, an array, or an existing dt-object
+// Source may be a plain object or an array. A dt-object can be passed to dtShape as it is
+const plainData = { profile: { name: 'Peter', sirname: 'Naydenov' } }
 const source = dtbox.init(plainData)        // returns a dt-object
+source.model(() => ({ as: 'std' }))
+// → { profile: { name: 'Peter', sirname: 'Naydenov' } }
 ```
 
 Why: `dtShape` reads through dt-toolbox query/store APIs. A raw JS
@@ -117,9 +133,16 @@ see `references/shape-syntax.md`.
 ### 3. Call `dtShape` and convert the result
 
 ```js
+const source    = dtbox.init({ firstName: 'Peter', sirname: 'Naydenov', tags: [ 'a', 'b' ] })
+const userShape = {   // a part of the shape above
+  firstName         : [ 'firstName', 'profile/name' ],
+  'profile/lastName': [ 'sirname', 'familyName' ],
+  'list!tags'       : [ 'tags', 'labels' ]
+}
 const out = dtShape(source, userShape)
 const js  = out.model(() => ({ as: 'std' }))   // plain JS object
 // or, for a JSON-safe value, the `as: 'std'` policy is the right pick
+// js → { firstName: 'Peter', profile: { lastName: 'Naydenov' }, tags: [ 'a', 'b' ] }
 ```
 
 `.model(() => ({ as: 'std' }))` is the canonical "give me a normal JS
@@ -136,8 +159,10 @@ that appear later overwrite earlier ones, so the priority order is
 the merge order.
 
 ```js
-const baseShape = { firstName: ['name'] }
-const viewShape = { ...baseShape, fullName: ['firstName','lastName'] }
+const baseShape = { firstName: ['name'], lastName: ['sirname'] }
+const viewShape = { ...baseShape, lastName: ['sirname', 'familyName'] }   // replaces lastName
+dtShape(dtbox.init({ name: 'Peter', familyName: 'Naydenov' }), viewShape).model(() => ({ as: 'std' }))
+// → { firstName: 'Peter', lastName: 'Naydenov' }
 ```
 
 
@@ -176,17 +201,19 @@ When the task is "apply dt-shape to X", produce code that:
   returned `undefined`, `null`, or didn't exist. dt-shape drops the
   key silently. Either add more fallback paths in the value array or
   check the result before use.
-- **"dtShape(source, shape) is throwing `TypeError: ... is not a
-  function`"** — `source` is a plain JS object, not a dt-object. Run
-  it through `dtbox.init(plainData)` first.
+- **"dtShape(source, shape) is throwing `dt-shape: The source must be
+  a dt-object`"** — `source` is a plain JS object, not a dt-object. Run
+  it through `dtbox.init(plainData)` first. Other wrong arguments
+  (shape value not a list, unknown prefix like `'lsit!'`, non-string
+  source paths outside `load!`) also throw an error that names the key.
 - **"Priority is the wrong way around"** — the array order is
   `[fallback, preferred]`, not `[preferred, fallback]`. Last element
   wins. Move the preferred path to the END of the value array.
-- **"A `fold!` key is producing `{ key: undefined }`"** — the source
-  path resolves but the value at the leaf is `undefined` (not
-  missing). dt-shape's `fold!` puts whatever the leaf is, including
-  `undefined`, into the result. Skip the path with a `load!` filter
-  or guard the source data.
+- **"A key is missing although one source has a value"** — check the
+  order: only the LAST source with a real value wins, but `null`,
+  `undefined` and empty objects/arrays never overwrite. If the key is
+  still missing, none of the paths exist in the source (check the
+  `/` paths against the real data).
 - **"Adding `load!firstName` removed an existing `firstName` from
   the result"** — keys with the same suffix (after stripping `prefix!`)
   share the same output slot. The order in the shape decides who wins,
@@ -216,13 +243,13 @@ When the task is "apply dt-shape to X", produce code that:
 | Get the matching dt-toolbox                   | `const dtbox = dtShape.getDTtoolbox()`                               |
 | Wrap a plain value as a dt-object             | `const dt = dtbox.init(value)`                                       |
 | Apply a shape, get a dt-object back           | `const out = dtShape(dt, shape)`                                     |
-| Convert the dt-object to plain JS             | `out.model(() => ({ as: 'std' }))` (or `as: 'keep'`, `as: 'object'`) |
+| Convert the dt-object to plain JS             | `out.model(() => ({ as: 'std' }))`                                   |
 | Single-key rename                             | `{ newKey: ['oldKey'] }`                                             |
 | Rename with fallback priority                 | `{ newKey: ['a', 'b', 'c'] }` (last wins)                            |
 | Nested output                                 | `'a/b/c': ['x/y/z']` (key and path use `/`)                          |
 | Collect values into an array                  | `'list!key': ['a','b','c']`                                          |
 | Collect values into an object                 | `'fold!key': ['a','b','c']` (keys = path tail or leaf keys)          |
-| Inject a constant / function result           | `'load!key': [value, () => otherValue]` (last non-undefined wins)    |
+| Inject a constant / function result           | `'load!key': [value, () => otherValue]` (last real value wins)       |
 | Apply the same shape to many sources          | Reuse the shape object across calls; it is plain data                |
 
 For the full semantics of each prefix, priority edge cases, and how
@@ -249,12 +276,13 @@ const shape = {
 
 const a = dtShape(dtbox.init({ firstName: 'Peter', sirname: 'Naydenov', age: 42 }),
                   shape).model(() => ({ as: 'std' }))
-// a === { firstName: 'Peter', lastName: 'Naydenov', profile: { age: 42 } }
+// a → { firstName: 'Peter', lastName: 'Naydenov', profile: { age: 42 } }
 
 const b = dtShape(dtbox.init({ profile: { name: 'Peter', sirname: 'Naydenov' } }),
                   shape).model(() => ({ as: 'std' }))
-// b === { firstName: 'Peter', lastName: 'Naydenov' }
-// (profile/age is dropped because neither source path resolves)
+// b → { firstName: 'Peter', lastName: 'Naydenov' }
+// (profile/age is dropped because neither source path resolves;
+// 'sirname' has no path, so it is found inside profile)
 ```
 
 This is the canonical use case: one shape, many heterogeneous inputs,
@@ -275,8 +303,9 @@ const shape = {
   'fold!meta'  : [ 'profile/meta', 'meta' ],
   // collect values from several sibling sources into a list
   'list!contacts' : [ 'email', 'phone', 'twitter' ],
-  // inject a constant and a function result; last non-undefined wins
-  'load!env'      : [ 'dev', config.env, () => process.env.NODE_ENV ]
+  // inject a constant and a function result; last real value wins
+  // (APP_ENV is not set here, so the function result is skipped)
+  'load!env'      : [ 'dev', config.env, () => process.env.APP_ENV ]
 }
 
 const out = dtShape(
@@ -287,12 +316,10 @@ const out = dtShape(
   shape
 ).model(() => ({ as: 'std' }))
 
-/*
-  out === {
-    firstName: 'Peter',
-    meta: { role: 'admin', tier: 'gold' },
-    contacts: [ 'peter@example.com', '+359…' ],
-    env: 'production'
-  }
-*/
+// out → {
+//    firstName: 'Peter',
+//    meta: { role: 'admin', tier: 'gold' },
+//    contacts: [ 'peter@example.com', '+359…' ],
+//    env: 'production'
+//  }
 ```

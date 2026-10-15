@@ -7,49 +7,58 @@
 ## 1. Forgetting `.model(...)` returns a dt-object
 
 ```js
-const result = dtShape(source, shape)
-console.log(result)
-// [object Object]   ← this is a dt-object, not a plain object
-JSON.stringify(result)   // works, but is not what you want — see below
+const source = dtbox.init({ profile: { name: 'Peter' } })
+const shape  = { firstName: [ 'profile/name' ] }
+const result = dtShape(source, shape)   // ← this is a dt-object, not a plain object
+String(result)
+// → '[object Object]'
+JSON.stringify(result)
+// → '{}'
 ```
 
-**Why this is bad**: the dt-object's `.toJSON()` exists but the
-serialised form is the dt-toolbox internal shape, not the result
-you wanted. You almost always want the plain JS value.
+**Why this is bad**: the dt-object has no `.toJSON()`, so
+`JSON.stringify` gives `'{}'` — the data is lost without an error.
+You almost always want the plain JS value.
 
 **Safe pattern**:
 
 ```js
+const source = dtbox.init({ profile: { name: 'Peter' } })
+const shape  = { firstName: [ 'profile/name' ] }
 const result = dtShape(source, shape).model(() => ({ as: 'std' }))
-console.log(result)
-// { firstName: 'Peter', … }   ← plain JS object
+// result → { firstName: 'Peter' }
+// ← plain JS object
 ```
 
 
 ## 2. Forgetting `dtbox.init(...)` makes `dtShape` throw
 
 ```js
-dtShape({ name: 'Peter' }, { firstName: ['name'] })
-// TypeError: dt.query is not a function
+let message
+try { dtShape({ name: 'Peter' }, { firstName: ['name'] }) } catch (e) { message = e.message }
+// message → 'dt-shape: The source must be a dt-object. Create it with dtShape.getDTtoolbox().init ( data ).'
 ```
 
 **Why this is bad**: the source is a plain JS object, but dt-shape
-calls `source.query(...)` on it. A plain object does not have a
-`.query` method.
+reads the source with `source.query(...)`. A plain object does not
+have a `.query` method, so dt-shape checks the source and throws.
 
 **Safe pattern**:
 
 ```js
 const dtbox = dtShape.getDTtoolbox()
-dtShape(dtbox.init({ name: 'Peter' }), { firstName: ['name'] })
+dtShape(dtbox.init({ name: 'Peter' }), { firstName: ['name'] }).model(() => ({ as: 'std' }))
+// → { firstName: 'Peter' }
 ```
 
 
 ## 3. Priority is reversed: LAST element wins, not first
 
 ```js
-{ firstName: [ 'profile/name', 'firstName' ] }
-// If BOTH paths resolve, profile/name (the EARLIER one) is overwritten
+const source = dtbox.init({ firstName: 'Peter', profile: { name: 'Pit' } })
+dtShape(source, { firstName: [ 'profile/name', 'firstName' ] }).model(() => ({ as: 'std' }))
+// → { firstName: 'Peter' }
+// BOTH paths resolve: profile/name (the EARLIER one) is overwritten
 // by firstName (the LATER one). This is the opposite of "first
 // non-null wins".
 ```
@@ -65,43 +74,54 @@ is right-to-left.
 END of the array, and put fallbacks BEFORE it. Comment it:
 
 ```js
-{
+const shape = {
   // preference: 'profile/name'. Fallback: 'firstName' (only used
   // if profile/name is missing).
   firstName: [ 'firstName', 'profile/name' ]
 }
+dtShape(dtbox.init({ firstName: 'Peter', profile: { name: 'Pit' } }), shape).model(() => ({ as: 'std' }))
+// → { firstName: 'Pit' }
+dtShape(dtbox.init({ firstName: 'Peter' }), shape).model(() => ({ as: 'std' }))
+// → { firstName: 'Peter' }
 ```
 
 
 ## 4. `load!` and a plain key on the same output slot
 
 ```js
-{
+const shape = {
   'load!firstName' : [ 'Peter' ],
   firstName        : [ 'profile/name' ]
 }
+dtShape(dtbox.init({ profile: { name: 'Ivan' } }), shape).model(() => ({ as: 'std' }))
+// → { firstName: 'Ivan' }
+dtShape(dtbox.init({ name: 'Ivan' }), shape).model(() => ({ as: 'std' }))
+// → { firstName: 'Peter' }
 ```
 
 **What happens**: the second declaration (`firstName`) wins, because
 dt-shape stores both rules under the same output key
-(`'firstName'`). The `load!` result is overwritten — or, depending
-on the internal cache order, you get a flicker where the first
-visible result is the loaded one, then it gets replaced.
+(`'firstName'`) and applies shape keys in order. The `load!` result
+is overwritten whenever `profile/name` has a real value; it stays
+only when `profile/name` finds nothing.
 
 **Why this is bad**: it looks like the prefixes give you independent
 output slots. They do not — the prefix is consumed during parsing;
 the output slot is whatever comes after `prefix!`.
 
 **Safe pattern**: pick one mode per output key. If you need a
-conditional override, use a `load!` function that reads the source
-and decides:
+conditional override, use a `load!` function that reads the plain
+source data (a dt-object has no `.profile` property) and decides:
 
 ```js
-{
+const data  = { profile: { name: 'Ivan' } }
+const shape = {
   'load!firstName': [
-    () => source.profile?.name ?? 'Anonymous'
+    () => data.profile?.name ?? 'Anonymous'
   ]
 }
+dtShape(dtbox.init(data), shape).model(() => ({ as: 'std' }))
+// → { firstName: 'Ivan' }
 ```
 
 
@@ -111,7 +131,7 @@ and decides:
 const source = dtbox.init({ a: 1 })
 const shape  = { a: ['a'], b: ['b'] }
 const out    = dtShape(source, shape).model(() => ({ as: 'std' }))
-// out === { a: 1 }
+// out → { a: 1 }
 // 'b' is absent — no null, no undefined, no warning.
 ```
 
@@ -121,17 +141,24 @@ debug for an hour.
 
 **Safe patterns (pick one)**:
 
-1. Always provide a `load!` fallback for fields the consumer
-   requires:
+1. Pass `defaults` (third argument) for fields the consumer
+   requires. Defaults are used only when the shape finds no real
+   value, and can be `null`, `[]` or `{}`:
 
    ```js
-   { b: ['b'], 'load!b': ['default-value'] }
-   // last declaration wins, so 'load!b' guarantees 'b' is present
+   const source = dtbox.init({ a: 1 })
+   dtShape(source, { a: ['a'], b: ['b'] }, { b: 'default-value' }).model(() => ({ as: 'std' }))
+   // → { a: 1, b: 'default-value' }
    ```
+
+   Don't use `{ b: ['b'], 'load!b': ['default-value'] }` — the later
+   `load!b` always wins and replaces a real `b`.
 
 2. Validate the result after the call:
 
    ```js
+   const source = dtbox.init({ a: 1, b: 2 })
+   const shape  = { a: ['a'], b: ['b'] }
    const out = dtShape(source, shape).model(() => ({ as: 'std' }))
    if (!('b' in out)) throw new Error('shape contract violated: missing b')
    ```
@@ -139,86 +166,91 @@ debug for an hour.
 3. Use a typed schema (Zod, etc.) to validate the final object.
 
 
-## 6. Nested output paths do not deep-merge with sibling rules
+## 6. Shape keys that write to the same output path
 
 ```js
-{
+const source = dtbox.init({ name: 'Peter', meta: { age: 42 } })
+const shape  = {
   'profile/name': [ 'name' ],
-  'profile'     : [ 'meta' ]    // ← this REPLACES profile
+  'profile'     : [ 'meta' ]    // ← merged with profile/name
 }
+dtShape(source, shape).model(() => ({ as: 'std' }))
+// → { profile: { name: 'Peter', age: 42 } }
 ```
 
-**What happens**: `'profile'` as an output path says "store a value
-under the key `profile`". When the second rule tries to store its
-result there, the dt-toolbox internal storage layer replaces
-`profile` (with the new value), losing the `name` child.
-
-**Safe pattern**: if you need a flat sibling to be merged INTO a
-nested output, use `fold!` to collect the contributions explicitly:
+**What happens**: shape keys are applied in order. When a key writes
+an object to a path that already holds an object, the two are
+deep-merged. Any other value REPLACES what is there — the later
+shape key wins:
 
 ```js
-{
-  'profile/name': [ 'name' ],
-  'fold!profile': [ 'meta' ]
-  // result === { profile: { name: '…', …metaChildren } }
+const source = dtbox.init({ name: 'Peter', age: 42 })
+const shape  = {
+  'v/a' : [ 'name' ],
+  'v'   : [ 'age' ]      // ← replaces v
 }
+dtShape(source, shape).model(() => ({ as: 'std' }))
+// → { v: 42 }
 ```
 
-Or, more commonly, just keep the children disjoint:
+**Safe pattern**: keep output paths disjoint when you can. When a
+key must contribute to an existing object, make sure both values are
+objects, so they merge instead of replacing each other:
 
 ```js
-{
+const source = dtbox.init({ name: 'Peter', age: 42 })
+const shape  = {
   'profile/name': [ 'name' ],
   'profile/age' : [ 'age' ]
 }
+dtShape(source, shape).model(() => ({ as: 'std' }))
+// → { profile: { name: 'Peter', age: 42 } }
 ```
 
 
-## 7. `list!` does not flatten — it pushes the whole value
+## 7. `list!` collects values one level deep
 
 ```js
-{
-  'list!tags': [ 'tags', 'labels' ]
-}
-// If source.tags is ['a','b','c'], result.list.tags is ['a','b','c'].
-// It is NOT flattened into the outer list.
+const source = dtbox.init({ tags: ['a','b','c'], labels: ['x'], meta: { tag: 'admin' } })
+dtShape(source, { 'list!tags': [ 'tags', 'labels', 'meta' ] }).model(() => ({ as: 'std' }))
+// → { tags: [ 'a', 'b', 'c', 'x', 'admin' ] }
 ```
 
-**What you probably wanted**:
+**What happens**: when a source path points to an array or object,
+`list!` pushes its VALUES (array items / object property values),
+not the container itself. Nested objects and arrays inside it are
+pushed as whole values:
 
 ```js
-const source = dtbox.init({ tags: ['a','b','c'], labels: ['x'] })
-dtShape(source, { 'list!tags': [ 'tags', 'labels' ] })
+const out = dtShape(dtbox.init({ list: [ 1, [ 2, 3 ], { id: 4 } ] }), { 'list!xs': [ 'list' ] })
   .model(() => ({ as: 'std' }))
-// { tags: [ ['a','b','c'], ['x'] ] }
+// out → { xs: [ 1, [ 2, 3 ], { id: 4 } ] }
 ```
 
-If you want a flat list, flatten the source first, or pre-process
-with `dt-toolbox` directly.
-
-**Safe pattern**: pick the level of nesting intentionally. If a
-source value is itself a list and you want its elements in the
-output list, build a `load!` that flattens:
+**Safe pattern**: if you want each container as ONE element of the
+list, use a `load!` function that reads the plain data:
 
 ```js
-{
-  'list!tags': [
-    () => [...(source.tags ?? []), ...(source.labels ?? [])]
-  ]
+const data  = { tags: [ 'a', 'b', 'c' ], labels: [ 'x' ] }
+const shape = {
+  'load!groups': [ () => [ data.tags, data.labels ] ]
 }
+dtShape(dtbox.init(data), shape).model(() => ({ as: 'std' }))
+// → { groups: [ [ 'a', 'b', 'c' ], [ 'x' ] ] }
 ```
 
 
 ## 8. `fold!` merges shallowly — last source wins per top-level key
 
 ```js
-{
-  'fold!meta': [ 'metaA', 'metaB' ]
-}
-// If source.metaA === { x: 1, y: 2 } and source.metaB === { y: 99, z: 3 },
-// result.meta === { x: 1, y: 99, z: 3 }.
+const source = dtbox.init({
+  metaA: { x: 1, y: { a: 1 } },
+  metaB: { y: { b: 2 }, z: 3 }
+})
+dtShape(source, { 'fold!meta': [ 'metaA', 'metaB' ] }).model(() => ({ as: 'std' }))
+// → { meta: { x: 1, y: { b: 2 }, z: 3 } }
 // 'y' came from metaB because it was listed later, even though
-// metaA had it first.
+// metaA had it first. The two 'y' objects are NOT merged.
 ```
 
 **Why this is bad**: deep-merge semantics are what people expect
@@ -230,11 +262,23 @@ deep-merge yourself by passing each value through a custom function
 and folding the result:
 
 ```js
-{
+// any deep-merge helper works here (e.g. lodash.merge)
+const deepMerge = (a, b) => {
+  const out = { ...a }
+  for (const [k, v] of Object.entries(b)) {
+    const both = v && typeof v === 'object' && out[k] && typeof out[k] === 'object'
+    out[k] = both ? deepMerge(out[k], v) : v
+  }
+  return out
+}
+const data  = { metaA: { x: 1, y: { a: 1 } }, metaB: { y: { b: 2 }, z: 3 } }
+const shape = {
   'load!meta': [
-    () => deepMerge(source.metaA ?? {}, source.metaB ?? {})
+    () => deepMerge(data.metaA ?? {}, data.metaB ?? {})
   ]
 }
+dtShape(dtbox.init(data), shape).model(() => ({ as: 'std' }))
+// → { meta: { x: 1, y: { a: 1, b: 2 }, z: 3 } }
 ```
 
 
@@ -242,10 +286,10 @@ and folding the result:
 
 ```js
 const source = dtbox.init({ 'content/type': 'article' })
-dtShape(source, { contentType: ['content/type'] })
+dtShape(source, { contentType: ['content/type'] }).model(() => ({ as: 'std' }))
+// → {}
 // 'content/type' is interpreted as a 2-segment path:
-//   source.content → undefined (not an object)
-// → silently dropped
+// source.content does not exist, so the key is silently dropped
 ```
 
 **Why this is bad**: there is no escape syntax. The slash is the
@@ -256,27 +300,31 @@ segment separator, full stop.
 1. Normalise the source before passing to dt-shape:
 
    ```js
+   const raw = { 'content/type': 'article', id: 7 }
    const normalised = Object.fromEntries(
      Object.entries(raw).map(([k, v]) => [k.replace(/\//g, '.'), v])
    )
-   dtShape(dtbox.init(normalised), shape)
+   dtShape(dtbox.init(normalised), { contentType: [ 'content.type' ] }).model(() => ({ as: 'std' }))
+   // → { contentType: 'article' }
    ```
 
-2. Use `dt-toolbox` directly for the lookup, then pass the result
-   into dt-shape as a pre-extracted value:
+2. Read the value from the plain data yourself and inject it with
+   `load!`:
 
    ```js
-   const raw = dtbox.init(source)
-   // dt-toolbox supports dot-notation; if you pre-resolve, dt-shape
-   // only sees a flat object.
+   const raw   = { 'content/type': 'article', id: 7 }
+   const shape = { id: [ 'id' ], 'load!contentType': [ () => raw['content/type'] ] }
+   dtShape(dtbox.init(raw), shape).model(() => ({ as: 'std' }))
+   // → { id: 7, contentType: 'article' }
    ```
 
 
 ## 10. Empty value arrays are silently ignored
 
 ```js
-{ key: [] }
-// → key is dropped. No warning.
+dtShape(dtbox.init({ a: 1 }), { a: [ 'a' ], key: [] }).model(() => ({ as: 'std' }))
+// → { a: 1 }
+// 'key' is dropped. No warning.
 ```
 
 **Why this is bad**: a typo or a programmatic shape-builder that
@@ -288,16 +336,21 @@ optional, use `load!` with an explicit `undefined` fallback so
 the absence is intentional and visible:
 
 ```js
-{ 'load!key': [ undefined ] }   // explicit: "key may be missing"
+const shape = { a: [ 'a' ], 'load!key': [ undefined ] }   // explicit: "key may be missing"
+dtShape(dtbox.init({ a: 1 }), shape).model(() => ({ as: 'std' }))
+// → { a: 1 }
 ```
 
 
 ## 11. Functions in `load!` are called every shape application
 
 ```js
-{
+const shape = {
   'load!timestamp': [ () => Date.now() ]
 }
+const out = dtShape(dtbox.init({ id: 1 }), shape).model(() => ({ as: 'std' }))
+typeof out.timestamp
+// → 'number'
 ```
 
 Each call to `dtShape(source, shape)` will RE-EVALUATE this function
@@ -331,6 +384,8 @@ const userViewShape = Object.freeze({
 function getUserView(user) {
   return dtShape(dtbox.init(user), userViewShape).model(() => ({ as: 'std' }))
 }
+getUserView({ name: 'Peter', sirname: 'Naydenov' })
+// → { firstName: 'Peter', lastName: 'Naydenov' }
 ```
 
 **Why this matters**: the shape is a record of what the consumer

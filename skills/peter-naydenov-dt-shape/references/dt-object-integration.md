@@ -30,23 +30,33 @@ dt-shape's internal calls assume its own pinned version.
 JS object / array coming from JSON, an API response, a fixture, a
 test, or user input. This is 99% of the cases.
 
-**Skip the conversion** when you already have a dt-object. dt-shape
-will accept any value the toolbox will accept.
+**Skip the conversion** when you already have a dt-object — pass it
+to `dtShape` as it is. Re-init is not needed: `dtbox.init(dtObject)`
+only makes a copy (dt-toolbox 8.1.2 and newer). dt-toolbox 8.1.1 and
+older returned an EMPTY dt-object, so every key was dropped.
 
 ```js
-const a = dtbox.init(plainObj)
-const b = dtbox.init(someDtObject)   // re-init is safe; it shreds the model
+const shape = { firstName: [ 'profile/name' ] }
+const a = dtbox.init({ profile: { name: 'Peter' } })   // plain data → dt-object
 const c = dtShape(a, shape)         // dt-object in, dt-object out
-const d = dtShape(b, shape)         // same
+c.model(() => ({ as: 'std' }))
+// → { firstName: 'Peter' }
+const d = dtShape(dtbox.init(a), shape)   // Not needed: works on a copy of `a`
+d.model(() => ({ as: 'std' }))
+// → { firstName: 'Peter' }
 ```
 
 If you have a chain of dt-shapes where the output of one is the input
-to the next, do not re-init. Just pass the dt-object through:
+to the next, just pass the dt-object through:
 
 ```js
+const raw    = dtbox.init({ profile: { name: 'Peter' } })
+const shapeA = { firstName: [ 'profile/name' ] }
+const shapeB = { 'user/name': [ 'firstName' ] }
 const step1 = dtShape(raw, shapeA)            // dt-object
 const step2 = dtShape(step1, shapeB)          // dt-object
 const js    = step2.model(() => ({ as: 'std' }))
+// js → { user: { name: 'Peter' } }
 ```
 
 
@@ -59,8 +69,23 @@ arguments and returns a policy object. The most common policies:
 | Policy                            | Output                                       |
 | --------------------------------- | -------------------------------------------- |
 | `() => ({ as: 'std' })`           | Plain object / array / primitive. JSON-safe for primitives, objects, and arrays of those. |
-| `() => ({ as: 'keep' })`          | Keeps dt-object internals — rarely what you want. |
-| `() => ({ as: 'object' })`        | Plain object, but may include internal helpers. Usually `as: 'std'` is what you want. |
+| `() => ({ as: 'breadcrumbs' })`   | Flat object with path keys: `{ 'profile/name': 'Peter' }`. |
+| `() => ({ as: 'tuples' })`        | List of `[ path, value ]` pairs. |
+| `() => ({ as: 'dt-object' })`     | A new dt-object (same as omitting `as`). |
+
+```js
+const out = dtShape(dtbox.init({ profile: { name: 'Peter' } }), { profile: [ 'profile' ] })
+out.model(() => ({ as: 'std' }))
+// → { profile: { name: 'Peter' } }
+out.model(() => ({ as: 'breadcrumbs' }))
+// → { 'profile/name': 'Peter' }
+out.model(() => ({ as: 'tuples' }))
+// → [ [ 'profile/name', 'Peter' ] ]
+```
+
+dt-toolbox 8 has a few more (`'files'`, `'flat'`, `'midFlat'`,
+`'dt-model'`). An unknown `as` value (e.g. `'keep'`, `'object'`)
+throws, and the error lists the supported ones.
 
 For most consumers — `JSON.stringify`, `res.json`, `console.log`,
 passing to a renderer — use `as: 'std'`. If you need the dt-object
@@ -83,6 +108,7 @@ The one thing you SHOULD keep stable is the toolbox instance itself.
 Create it once at module top level:
 
 ```js
+// fragment — module top-level code (uses `export`)
 // at the top of the file
 import dtShape from 'dt-shape'
 export const dtbox = dtShape.getDTtoolbox()
