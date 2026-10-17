@@ -2,6 +2,11 @@
 
 
 
+### 4.0.1 ( 2026-10-17)
+- [x] Dependency update. `dt-toolbox` to version 8.1.3;
+
+
+
 ### 4.0.0 ( 2026-10-15)
 - [x] Breaking: Dependency update. `dt-toolbox` to version 8.1.2. `dtShape.getDTtoolbox()` returns dt-toolbox v.8: `init` throws on an unsupported model name (was: returns `null`), `dt.copy()` returns primitive values first, `getWalk()` returns walk v.7 (`IGNORE` became `IGNORE()`). See `Migration.guide.md`;
 - [x] Breaking: Only real values. `null`, `undefined`, empty objects and empty arrays are ignored: they don't overwrite a found value (default mode and `load!`), they are not collected by `list!` and `fold!` (before: `null` items and a `"null": null` property), and they are removed from copied objects. Copied arrays keep their positions: a position without a real value is `null`. Use `list!` for a list without empty places. See `Migration.guide.md`;
